@@ -7,10 +7,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import moe.styx.downloader.httpClient
-import moe.styx.downloader.setGenericJsonBody
 import moe.styx.downloader.torrent.Torrent
 import moe.styx.downloader.torrent.TorrentClient
 import moe.styx.downloader.utils.Log
+import moe.styx.downloader.utils.setGenericJsonBody
 import moe.styx.types.json
 import kotlin.random.Random
 
