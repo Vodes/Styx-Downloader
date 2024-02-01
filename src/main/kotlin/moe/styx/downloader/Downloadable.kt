@@ -5,6 +5,7 @@ import moe.styx.db.StyxDBClient
 import moe.styx.db.getEntries
 import moe.styx.downloader.parsing.ParseDenyReason
 import moe.styx.downloader.parsing.ParseResult
+import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.RegexCollection
 import moe.styx.types.DownloadableOption
 import moe.styx.types.DownloaderTarget

@@ -1,9 +1,9 @@
 package moe.styx.downloader.ftp
 
 import kotlinx.coroutines.delay
-import moe.styx.downloader.Log
-import moe.styx.downloader.launchThreaded
-import moe.styx.downloader.readableSize
+import moe.styx.downloader.utils.Log
+import moe.styx.downloader.utils.launchThreaded
+import moe.styx.downloader.utils.readableSize
 import java.io.File
 import java.io.FileOutputStream
 import kotlin.time.DurationUnit

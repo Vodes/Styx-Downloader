@@ -4,6 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import moe.styx.downloader.torrent.TorrentClient
 import moe.styx.downloader.torrent.flood.FloodClient
+import moe.styx.downloader.utils.Log
 import moe.styx.types.eqI
 import java.io.File
 
@@ -31,7 +32,9 @@ data class TorrentConfig(
     val type: String = "Flood",
     val url: String = "",
     val user: String = "",
-    val pass: String = ""
+    val pass: String = "",
+    val defaultNonSeedDir: String = "",
+    val defaultSeedDir: String = ""
 ) {
     fun createClient(): TorrentClient? {
         if (url.isBlank() || user.isBlank() || pass.isBlank()) {

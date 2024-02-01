@@ -1,0 +1,22 @@
+package moe.styx.downloader.utils
+
+import moe.styx.types.DownloadableOption
+import moe.styx.types.DownloaderTarget
+import moe.styx.types.SourceType
+
+infix fun DownloadableOption.parentIn(list: List<DownloaderTarget>): DownloaderTarget {
+    return list.find { it.options.find { opt -> opt == this } != null }!!
+}
+
+/**
+ * We only want to get each RSS feed once, so we map it to Feed and Options that use the feed
+ */
+fun List<DownloaderTarget>.getRSSOptions(): Map<String, List<DownloadableOption>> {
+    val options = this.flatMap { it.options }.filter { !it.sourcePath.isNullOrBlank() && it.source == SourceType.TORRENT }
+    return options.groupBy { it.sourcePath!! }
+}
+
+fun List<DownloaderTarget>.getFTPOptions(): List<DownloadableOption> {
+    val options = this.flatMap { it.options }
+    return options.filter { !it.sourcePath.isNullOrBlank() && it.source == SourceType.FTP }
+}

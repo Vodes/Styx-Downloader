@@ -8,7 +8,9 @@ enum class ParseDenyReason {
     InvalidEpisodeNumber,
     BetterVersionPresent,
     SameVersionPresent,
-    WaitingForPreviousOption
+    WaitingForPreviousOption,
+    PostIsTooOld,
+    FileIsTooNew
 }
 
 sealed class ParseResult {

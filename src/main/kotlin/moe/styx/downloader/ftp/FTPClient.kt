@@ -1,6 +1,6 @@
 package moe.styx.downloader.ftp
 
-import moe.styx.downloader.Log
+import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.RegexCollection
 import org.apache.commons.net.ftp.FTP
 import org.apache.commons.net.ftp.FTPClientConfig
@@ -68,6 +68,7 @@ class FTPClient(
         return null
     }
 
+    fun disconnect() = client.disconnect()
     fun listDirectories() = client.listDirectories()
     fun listDirectories(path: String) = client.listDirectories(path)
     fun listFiles() = client.listFiles()

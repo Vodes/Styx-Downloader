@@ -7,10 +7,13 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.cookies.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
+import moe.styx.downloader.ftp.FTPHandler
+import moe.styx.downloader.torrent.RSSHandler
 import moe.styx.types.DownloadableOption
 import moe.styx.types.DownloaderTarget
 import moe.styx.types.SourceType
 import moe.styx.types.json
+import net.peanuuutz.tomlkt.Toml
 import java.io.File
 import kotlin.system.exitProcess
 
@@ -45,17 +48,22 @@ object Main {
     lateinit var configFile: File
 
     lateinit var config: Config
+
+    val toml = Toml {
+        ignoreUnknownKeys = true
+        explicitNulls = true
+    }
 }
 
 fun loadConfig(args: Array<String> = emptyArray()) {
     Main.appDir = if (args.isEmpty()) getAppDir() else File(args[0]).also { it.mkdirs() }
     Main.configFile = File(Main.appDir, "config.toml")
     if (!Main.configFile.exists()) {
-        Main.configFile.writeText(toml.encodeToString(Config()))
+        Main.configFile.writeText(Main.toml.encodeToString(Config()))
         println("Please setup your config at: ${Main.configFile.absolutePath}")
         exitProcess(1)
     }
-    Main.config = toml.decodeFromString(Main.configFile.readText())
+    Main.config = Main.toml.decodeFromString(Main.configFile.readText())
     httpClient = HttpClient {
         install(ContentNegotiation) { json }
         install(ContentEncoding)
@@ -72,4 +80,6 @@ fun main(args: Array<String>) {
 //
     println(targets.episodeWanted("Vinland Saga S2E03 [1080p][AAC][JapGerDub][GerEngSub][Web-DL].mkv"))
 //    RSSHandler.test()
+    RSSHandler.start()
+    FTPHandler.start()
 }

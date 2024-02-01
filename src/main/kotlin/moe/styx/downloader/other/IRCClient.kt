@@ -3,7 +3,6 @@ package moe.styx.downloader.other
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import kotlinx.coroutines.runBlocking
-import moe.styx.downloader.capitalize
 import moe.styx.downloader.httpClient
 import org.jibble.pircbot.DccFileTransfer
 import org.jibble.pircbot.PircBot
@@ -31,7 +30,7 @@ class IRCClient : PircBot() {
         this.userName = generatedName
         this.realName = generatedName
         this.version = "1"
-        
+
     }
 
 

@@ -1,4 +1,4 @@
-package moe.styx.downloader
+package moe.styx.downloader.utils
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
