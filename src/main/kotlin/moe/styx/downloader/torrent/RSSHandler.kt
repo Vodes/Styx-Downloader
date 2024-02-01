@@ -13,6 +13,7 @@ import kotlinx.datetime.Clock
 import moe.styx.db.getTargets
 import moe.styx.downloader.*
 import moe.styx.downloader.parsing.ParseResult
+import moe.styx.downloader.utils.RegexCollection
 import moe.styx.types.DownloadableOption
 import moe.styx.types.DownloaderTarget
 import moe.styx.types.eqI
@@ -21,9 +22,6 @@ import java.time.format.DateTimeFormatter
 import kotlin.jvm.optionals.getOrNull
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
-
-private val torrentURLRegex = "href=\"(?<url>https?:\\/\\/[^ \"<>]+?\\.torrent)\"".toRegex(RegexOption.IGNORE_CASE)
-private val generalURLRegex = "https?:\\/\\/.+".toRegex(RegexOption.IGNORE_CASE)
 
 object RSSHandler {
     private lateinit var torrentClient: TorrentClient
@@ -35,6 +33,7 @@ object RSSHandler {
             Log.e("RSSHandler::start") { "Could not initiate the torrent client." }
             return
         }
+        torrentClient = client
         val oneMinute = 1.toDuration(DurationUnit.MINUTES)
         launchThreaded {
             while (true) {
@@ -114,8 +113,8 @@ data class FeedItem(
     }
 
     fun getPostURL(): String {
-        return if (guid.isNotBlank() && generalURLRegex.containsMatchIn(guid))
-            generalURLRegex.matchEntire(guid)?.groups?.get(0)?.value ?: ""
+        return if (guid.isNotBlank() && RegexCollection.generalURLRegex.containsMatchIn(guid))
+            RegexCollection.generalURLRegex.matchEntire(guid)?.groups?.get(0)?.value ?: ""
         else
             this.link
     }
@@ -125,8 +124,8 @@ data class FeedItem(
             link
         } else if (enclosure != null && enclosure.type.contains("torrent", true)) {
             enclosure.url
-        } else if (description.isNotBlank() && torrentURLRegex.containsMatchIn(description)) {
-            torrentURLRegex.matchEntire(description)?.groups?.get("url")?.value ?: ""
+        } else if (description.isNotBlank() && RegexCollection.torrentHrefRegex.containsMatchIn(description)) {
+            RegexCollection.torrentHrefRegex.matchEntire(description)?.groups?.get("url")?.value ?: ""
         } else
             link
     }

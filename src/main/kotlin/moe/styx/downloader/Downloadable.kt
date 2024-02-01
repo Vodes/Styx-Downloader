@@ -5,6 +5,7 @@ import moe.styx.db.StyxDBClient
 import moe.styx.db.getEntries
 import moe.styx.downloader.parsing.ParseDenyReason
 import moe.styx.downloader.parsing.ParseResult
+import moe.styx.downloader.utils.RegexCollection
 import moe.styx.types.DownloadableOption
 import moe.styx.types.DownloaderTarget
 import moe.styx.types.eqI
@@ -55,11 +56,10 @@ fun List<DownloaderTarget>.episodeWanted(toMatch: String, rss: Boolean = false):
 }
 
 fun parseEpisodeAndVersion(toParse: String, offset: Int?): Pair<String, Int>? {
-    // Space out stuff like S01E01v2 to be S01E01 v2 (because Anitomy bad)
-    val fixPattern = "(?<whole>(?<ep>(?:S\\d+)?[E ]\\d+)(?<version>v\\d))".toRegex(RegexOption.IGNORE_CASE)
     var toParse = toParse
-    val match = fixPattern.matchEntire(toParse)
+    val match = RegexCollection.fixPattern.matchEntire(toParse)
     if (match != null) {
+        // Space out stuff like S01E01v2 to be S01E01 v2 (because Anitomy bad)
         toParse = toParse.replace(
             match.groups["whole"]!!.value,
             "%s %s".format(match.groups["ep"]!!.value, match.groups["version"]!!.value)
@@ -67,7 +67,7 @@ fun parseEpisodeAndVersion(toParse: String, offset: Int?): Pair<String, Int>? {
     }
     // Other misc fixes that kinda fuck with anitomy
     // Single letter parts in scene naming, for example Invincible.2021.S02E01.A.LESSON.FOR.YOUR.NEXT.LIFE.1080p.AMZN.WEB-DL.DDP5.1.H.264-FLUX.mkv
-    toParse = toParse.replaceFirst("\\.[A-Za-z]\\.".toRegex(), "")
+    toParse = toParse.replaceFirst(RegexCollection.singleLetterWithDot, "")
 
     val parsed = AnitomyJ.parse(toParse)
     var episode = parsed.find { it.category.toString() eqI "kElementEpisodeNumber" }?.value ?: return null

@@ -1,6 +1,7 @@
 package moe.styx.downloader.ftp
 
 import moe.styx.downloader.Log
+import moe.styx.downloader.utils.RegexCollection
 import org.apache.commons.net.ftp.FTP
 import org.apache.commons.net.ftp.FTPClientConfig
 import java.io.File
@@ -19,11 +20,7 @@ class FTPClient(
 ) {
     companion object {
         fun fromConnectionString(connectionString: String): FTPClient {
-            val connRegex =
-                "(?<connection>ftpe?s?):\\/\\/(?:(?<user>.+):(?<pass>.+)@)?(?<host>(?:[a-zA-Z0-9]+\\.?)+)(?::(?<port>\\d+))?(?<path>\\/.+)?"
-                    .toRegex(RegexOption.IGNORE_CASE)
-
-            val match = connRegex.matchEntire(connectionString)
+            val match = RegexCollection.ftpConnectionStringRegex.matchEntire(connectionString)
             if (match == null) {
                 val exception = Exception("Failed to parse connection string!")
                 Log.e("FTPClient from connection string: $connectionString", exception, printStack = false)
