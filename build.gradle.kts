@@ -2,8 +2,8 @@ plugins {
     kotlin("jvm") version "1.9.21"
     kotlin("plugin.serialization") version "1.9.21"
     application
-//    `java-library`
-//    `maven-publish`
+    `java-library`
+    `maven-publish`
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
@@ -28,7 +28,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
     implementation("com.github.ajalt.mordant:mordant:2.2.0")
     // https://mvnrepository.com/artifact/com.apptasticsoftware/rssreader
-    implementation("com.apptasticsoftware:rssreader:3.5.0")
+    implementation("com.apptasticsoftware:rssreader:3.6.0")
     // https://mvnrepository.com/artifact/com.mysql/mysql-connector-j
     implementation("com.mysql:mysql-connector-j:8.2.0")
     // https://mvnrepository.com/artifact/org.apache.commons/commons-collections4
@@ -72,17 +72,17 @@ java {
     withJavadocJar()
 }
 
-//publishing {
-//    publications {
-//        create<MavenPublication>("build") {
-//            groupId = "moe.styx"
-//            artifactId = "styx-downloader"
-//            version = "0.1"
-//
-//            from(components["java"])
-//        }
-//    }
-//}
+publishing {
+    publications {
+        create<MavenPublication>("build") {
+            groupId = "moe.styx"
+            artifactId = "styx-downloader"
+            version = "0.1"
+
+            from(components["java"])
+        }
+    }
+}
 
 configurations {
 

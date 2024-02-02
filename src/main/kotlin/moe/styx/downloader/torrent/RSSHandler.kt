@@ -25,7 +25,6 @@ import moe.styx.types.eqI
 import java.io.File
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.jvm.optionals.getOrNull
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -150,7 +149,7 @@ data class FeedItem(
     val guid: String,
     val link: String,
     val pubDate: String,
-    val enclosure: Enclosure?
+    val enclosures: List<Enclosure>
 ) {
 
     fun getUnixPubTime(): Long {
@@ -169,10 +168,11 @@ data class FeedItem(
     }
 
     fun getTorrentURL(): String {
+        val torrentEnclosure = enclosures.find { it.type.contains("bittorrent", true) && !it.type.contains("magnet", true) }
         return if (link.contains(".torrent", true)) {
             link
-        } else if (enclosure != null && enclosure.type.contains("torrent", true)) {
-            enclosure.url
+        } else if (torrentEnclosure != null) {
+            torrentEnclosure.url
         } else if (description.isNotBlank() && RegexCollection.torrentHrefRegex.containsMatchIn(description)) {
             RegexCollection.torrentHrefRegex.matchEntire(description)?.groups?.get("url")?.value ?: ""
         } else
@@ -202,7 +202,7 @@ data class FeedItem(
                 item.guid.orElse(""),
                 item.link.orElse(""),
                 item.pubDate.orElse(""),
-                item.enclosure.getOrNull()
+                item.enclosures
             )
         }
     }
