@@ -21,7 +21,7 @@ repositories {
 dependencies {
     //implementation("moe.styx:styx-types:0.3")
     implementation("moe.styx:styx-db:0.4")
-    implementation("com.github.Vodes:PircBot:0.1")
+    implementation("com.github.Vodes:PircBot:873bc4aa78")
     implementation("net.peanuuutz.tomlkt:tomlkt:0.3.7")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")

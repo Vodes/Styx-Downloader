@@ -9,8 +9,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
-import moe.styx.downloader.ftp.FTPHandler
-import moe.styx.downloader.torrent.RSSHandler
+import moe.styx.downloader.other.IRCClient
+import moe.styx.downloader.utils.launchGlobal
 import moe.styx.types.json
 import net.peanuuutz.tomlkt.Toml
 import java.io.File
@@ -49,9 +49,15 @@ fun loadConfig(args: Array<String> = emptyArray()) {
 
 fun main(args: Array<String>) {
     loadConfig(args)
-    FTPHandler.start()
-    if (Main.config.torrentConfig.defaultSeedDir.isNotBlank() && Main.config.torrentConfig.defaultNonSeedDir.isNotBlank())
-        RSSHandler.start()
+//    FTPHandler.start()
+//    if (Main.config.torrentConfig.defaultSeedDir.isNotBlank() && Main.config.torrentConfig.defaultNonSeedDir.isNotBlank())
+//        RSSHandler.start()
+
+    Main.config.ircConfig.servers.forEach { server, channels ->
+        launchGlobal {
+            IRCClient(server, channels).start()
+        }
+    }
 
     runBlocking {
         while (true) {
