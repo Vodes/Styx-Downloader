@@ -23,7 +23,7 @@ object FTPHandler {
     lateinit var defaultFTPClient: FTPClient
 
     fun initClient(): Boolean {
-        runCatching { defaultFTPClient = FTPClient.fromConnectionString(Main.config.defaultFTPConnectionString).connect()!! }
+        runCatching { defaultFTPClient = FTPClient.fromConnectionString(Main.config.defaultFTPConnectionString) }
             .onFailure {
                 Log.e("FTPHandler::start") { "Could not initialize default FTPClient." }
                 return false
@@ -39,7 +39,6 @@ object FTPHandler {
         val tempDir = File(Main.appDir, "Temp-FTP-Downloads")
         tempDir.mkdirs()
         launchThreaded {
-            delay(oneMinute)
             while (true) {
                 val targets = getDBClient().executeGet { getTargets() }
                 val ftpOptions = targets.getFTPOptions()
@@ -54,7 +53,7 @@ object FTPHandler {
                             Log.e("FTPHandler::start") { "Could not initialize custom FTPClient with connectionstring: ${option.ftpConnectionString}" }
                         }.getOrNull() ?: continue
                     }
-                    val results = checkDir(option.sourcePath!!, option, targets, client!!).filter { it.second is ParseResult.OK }
+                    val results = checkDir(option.sourcePath!!, option, targets, client).filter { it.second is ParseResult.OK }
                     for ((filePair, parseResult) in results) {
                         val result = parseResult as ParseResult.OK
                         val outFile = File(tempDir, File(filePair.first).name)

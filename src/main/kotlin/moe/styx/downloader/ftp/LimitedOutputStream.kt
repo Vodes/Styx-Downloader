@@ -29,12 +29,12 @@ class LimitedOutputStream(private val file: File, private val targetSize: Long, 
             launchThreaded {
                 while (!done) {
                     val diff = currentSize - prevSize
-                    val speed = (diff / 3).readableSize()
-//                    if (diff / 3 > rateLimit)
+                    val speed = (diff / 8).readableSize()
+//                    if (diff / 3 > ratelimit)
 //                        wait = true
                     Log.d { "${file.name}: ${currentSize.readableSize()} / ${targetSize.readableSize()} | $speed/s" }
                     prevSize = currentSize
-                    delay(3.toDuration(DurationUnit.SECONDS))
+                    delay(8.toDuration(DurationUnit.SECONDS))
                 }
             }
             firstWrite = false

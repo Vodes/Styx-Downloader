@@ -102,5 +102,5 @@ fun DownloadableOption.matches(toMatch: String, rss: Boolean = false): Boolean {
         regex = if (!this.rssRegex.isNullOrBlank()) this.rssRegex!!.toRegex(RegexOption.IGNORE_CASE) else
             this.fileRegex.replace("\\.mkv", "").replace(".mkv", "").toRegex(RegexOption.IGNORE_CASE)
     }
-    return regex.matches(if (!toMatch.endsWith(".mkv") && !rss) "$toMatch.mkv" else toMatch)
+    return regex.find(if (!(toMatch.endsWith(".mkv") || toMatch.endsWith(".mka")) && !rss) "$toMatch.mkv" else toMatch) != null
 }
