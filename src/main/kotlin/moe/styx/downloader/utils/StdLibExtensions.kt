@@ -7,6 +7,8 @@ import java.text.DecimalFormat
 import java.util.*
 import kotlin.math.floor
 
+val isWindows = System.getProperty("os.name").contains("win", true)
+
 fun String.capitalize(): String {
     return this.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
 }
@@ -30,6 +32,21 @@ fun Long.readableSize(useBinary: Boolean = false): String {
 fun LocalDateTime.formattedStr(): String {
     return "${this.year}-${this.monthNumber.padString()}-${this.dayOfMonth.padString()} " +
             "${this.hour.padString()}:${this.minute.padString()}:${this.second.padString()}"
+}
+
+/**
+ * Removes characters from a string that might be invalid for a file on your system.
+ *
+ * ":" to " -" is really just a stylistic choice.
+ * For example: `Frieren: Beyond Journey’s End - S01E21`
+ * to `Frieren - Beyond Journey’s End - S01E21`
+ */
+fun String.toFileSystemCompliantName(): String {
+    return if (isWindows) {
+        this.replace(":", " -").replaceAll("", "<", ">", "\"", "/", "\\", "|", "?", "*")
+    } else {
+        this.replace(":", " -").replace("/", "")
+    }
 }
 
 fun String.replaceAll(replacement: String, vararg values: String, ignoreCase: Boolean = true): String {

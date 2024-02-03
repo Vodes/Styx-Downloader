@@ -11,7 +11,7 @@ object Log {
 
     private val terminal = Terminal()
 
-    private fun getFormattedTime() = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).formattedStr()
+    fun getFormattedTime() = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).formattedStr()
 
     fun i(source: String? = null, message: () -> String) {
         printMsg(message(), "I", source, prefixColor = TextColors.gray)

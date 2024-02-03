@@ -50,7 +50,6 @@ data class Track(
 )
 
 fun File.getMediaInfo(): MediaInfo? {
-    val isWindows = System.getProperty("os.name").contains("win", true)
     val mediainfoExecutable = getExecutableFromPath("mediainfo") ?: return null
 
     val process: Process = if (isWindows) {
@@ -76,7 +75,7 @@ fun File.getMediaInfo(): MediaInfo? {
     return null
 }
 
-private fun getExecutableFromPath(name: String): File? {
+fun getExecutableFromPath(name: String): File? {
     val pathDirs = System.getenv("PATH").split(File.pathSeparator)
         .map { File(it) }.filter { it.exists() && it.isDirectory }
 

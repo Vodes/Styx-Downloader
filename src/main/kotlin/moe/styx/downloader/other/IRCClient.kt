@@ -94,6 +94,7 @@ class IRCClient(private val server: String, private val channels: List<String>) 
             return
         }
         Log.i(logSource) { "Downloaded file: ${transfer.file.name}" }
+        // TODO: Perhaps add a delay to avoid parsing/moving just barely unfinished downloads
         handleFile(transfer.file, parseResult.target, parseResult.option)
     }
 
