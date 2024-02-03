@@ -1,8 +1,8 @@
 package moe.styx.downloader.other
 
+import kotlinx.datetime.Clock
 import kotlinx.serialization.encodeToString
-import moe.styx.db.getEntries
-import moe.styx.db.getMedia
+import moe.styx.db.*
 import moe.styx.downloader.Main
 import moe.styx.downloader.getDBClient
 import moe.styx.downloader.parsing.AnitomyResults
@@ -11,8 +11,12 @@ import moe.styx.downloader.parsing.parseMetadata
 import moe.styx.downloader.utils.*
 import moe.styx.downloader.utils.Log
 import moe.styx.types.*
+import moe.styx.types.MediaInfo
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.text.DecimalFormat
+import java.util.*
 
 private val epFormat = DecimalFormat("0.#")
 
@@ -38,7 +42,7 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
     if (option.processingOptions != null) {
         val logFile = File(muxDir, "Mux Log - ${Log.getFormattedTime().replace(":", "-")}.txt")
         val commands = getBaseCommand(option.processingOptions!!)
-        commands.add("-o=${output.absolutePath}")
+        commands.add("-o=${File(muxDir, output.name)}")
 
         if (arrayOf(
                 option.processingOptions!!.keepAudioOfPrevious,
@@ -66,16 +70,100 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
                     "---------- Muxtools Log below ----------\n\n"
         )
         commands.add(file.absolutePath)
-        ProcessBuilder(commands)
+        val result = ProcessBuilder(commands)
             .redirectOutput(ProcessBuilder.Redirect.appendTo(logFile))
             .redirectError(ProcessBuilder.Redirect.appendTo(logFile))
             .directory(muxDir).start().waitFor()
+        val muxedFile = File(muxDir, output.name)
+        if (result == 0 && muxedFile.exists()) {
+            Files.move(muxedFile.toPath(), output.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        } else
+            return
     } else {
-        file.renameTo(output)
+        Files.move(file.toPath(), output.toPath(), StandardCopyOption.REPLACE_EXISTING)
     }
     output.setTitleAndFixMeta(title)
 
-    //TODO: Add to database, delete old file, add mediainfo to database, delete
+
+
+    if (previous != null) {
+        val previousFile = File(previous.filePath)
+        if (previousFile.exists() && previousFile != output)
+            previousFile.delete()
+    }
+
+    getDBClient().executeAndClose {
+        val entry = previous?.copy(filePath = output.absolutePath, fileSize = output.length(), originalName = file.name)
+            ?: MediaEntry(
+                UUID.randomUUID().toString().uppercase(),
+                media.GUID,
+                Clock.System.now().epochSeconds,
+                episodeWithOffset,
+                null,
+                null,
+                null,
+                null,
+                null,
+                output.absolutePath,
+                output.length(),
+                file.name
+            )
+
+        if (!save(entry)) {
+            Log.e("FileHandler for file: ${output.name}") { "Could not add entry to database!" }
+            return@executeAndClose
+        }
+
+        val mediaInfoResult = output.getMediaInfo()
+        if (mediaInfoResult != null) {
+            save(
+                MediaInfo(
+                    entry.GUID,
+                    mediaInfoResult.videoCodec(),
+                    mediaInfoResult.videoBitDepth(),
+                    mediaInfoResult.videoResolution(),
+                    mediaInfoResult.hasEnglishDub().toInt(),
+                    mediaInfoResult.hasGermanDub().toInt(),
+                    mediaInfoResult.hasGermanSub().toInt()
+                )
+            )
+        }
+
+        if (option.addToLegacyDatabase) {
+            getDBClient("Styx-Library").executeAndClose Legacy@{
+                val anime = getLegacyAnime(mapOf("GUID" to media.GUID)).firstOrNull() ?: return@Legacy
+                val legacyEP = getLegacyEpisodes(mapOf("Name" to anime.name)).find { it.ep.toDoubleOrNull() == entry.entryNumber.toDoubleOrNull() }
+                if (legacyEP != null)
+                    save(
+                        legacyEP.copy(
+                            filePath = entry.filePath,
+                            fileSize = entry.fileSize.toDouble() / (1024 * 1024),
+                            prevName = entry.originalName
+                        )
+                    )
+                else {
+                    save(
+                        LegacyEpisodeInfo(
+                            UUID.randomUUID().toString().uppercase(),
+                            entry.GUID,
+                            "",
+                            anime.name,
+                            entry.entryNumber,
+                            entry.originalName,
+                            null,
+                            null,
+                            null,
+                            null,
+                            entry.filePath,
+                            entry.fileSize.toDouble() / (1024 * 1024)
+                        )
+                    )
+                }
+            }
+        }
+
+        // TODO: Discord Announcements
+    }
 }
 
 fun String.fillTokens(

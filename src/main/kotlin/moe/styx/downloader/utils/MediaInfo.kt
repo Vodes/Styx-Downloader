@@ -16,7 +16,14 @@ data class MediaInfo(
     val ref: String? = null,
     @SerialName("track")
     val tracks: List<Track>
-)
+) {
+    fun hasGermanDub() = tracks.filter { it.type eqI "audio" }.find { it.language.equalsAny("de", "ger") } != null
+    fun hasGermanSub() = tracks.filter { it.type eqI "text" }.find { it.language.equalsAny("de", "ger") } != null
+    fun hasEnglishDub() = tracks.filter { it.type eqI "audio" }.find { it.language.equalsAny("en", "eng") } != null
+    fun videoBitDepth() = tracks.find { it.type eqI "video" }?.bitDepth?.toIntOrNull() ?: 8
+    fun videoResolution() = tracks.find { it.type eqI "video" }?.let { "${it.width ?: "1920"}x${it.height ?: "1080"}" } ?: "1920x1080"
+    fun videoCodec() = tracks.find { it.type eqI "video" }?.format ?: "AVC"
+}
 
 @Serializable
 @SerialName("track")

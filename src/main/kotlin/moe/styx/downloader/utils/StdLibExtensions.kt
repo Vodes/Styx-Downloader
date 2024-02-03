@@ -57,6 +57,16 @@ fun String.replaceAll(replacement: String, vararg values: String, ignoreCase: Bo
     return new
 }
 
+fun String?.equalsAny(vararg values: String, ignoreCase: Boolean = true): Boolean {
+    if (this == null)
+        return false
+    for (value in values) {
+        if (this.equals(value, ignoreCase))
+            return true
+    }
+    return false
+}
+
 fun String.containsAny(vararg values: String, ignoreCase: Boolean = true): Boolean {
     for (value in values) {
         if (this.contains(value, ignoreCase))
