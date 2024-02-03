@@ -23,6 +23,7 @@ dependencies {
     implementation("moe.styx:styx-db:0.4")
     implementation("com.github.Vodes:PircBot:873bc4aa78")
     implementation("net.peanuuutz.tomlkt:tomlkt:0.3.7")
+    implementation("org.javacord:javacord:3.8.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")

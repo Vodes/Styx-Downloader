@@ -18,7 +18,9 @@ data class Config(
     @SerialName("TorrentConfig")
     val torrentConfig: TorrentConfig = TorrentConfig(),
     @SerialName("IRCConfig")
-    val ircConfig: IRCConfig = IRCConfig(mapOf("irc.rizon.net" to listOf("#subsplease", "#Styx-XDCC")))
+    val ircConfig: IRCConfig = IRCConfig(mapOf("irc.rizon.net" to listOf("#subsplease", "#Styx-XDCC"))),
+    @SerialName("DiscordBotConfig")
+    val discordBot: DiscordBotConfig = DiscordBotConfig()
 )
 
 @Serializable
@@ -55,6 +57,17 @@ data class DbConfig(
     val user: String = "",
     val pass: String = ""
 )
+
+@Serializable
+data class DiscordBotConfig(
+    val token: String = "",
+    val announceServer: String = "",
+    val announceChannel: String = "",
+    val pingRole: String = "",
+    val dmRole: String = ""
+) {
+    fun isValid() = token.isNotBlank() && announceServer.isNotBlank() && announceChannel.isNotBlank()
+}
 
 fun getAppDir(): File {
     return if (System.getProperty("os.name").lowercase().contains("win")) {

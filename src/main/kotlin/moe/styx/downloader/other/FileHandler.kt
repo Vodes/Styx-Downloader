@@ -162,7 +162,8 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
             }
         }
 
-        // TODO: Discord Announcements
+        if (previous == null)
+            notifyDiscord(entry, media)
     }
 }
 

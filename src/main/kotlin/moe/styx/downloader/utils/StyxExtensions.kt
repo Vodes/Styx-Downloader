@@ -1,8 +1,6 @@
 package moe.styx.downloader.utils
 
-import moe.styx.types.DownloadableOption
-import moe.styx.types.DownloaderTarget
-import moe.styx.types.SourceType
+import moe.styx.types.*
 
 infix fun DownloadableOption.parentIn(list: List<DownloaderTarget>): DownloaderTarget {
     return list.find { it.options.find { opt -> opt == this } != null }!!
@@ -19,4 +17,16 @@ fun List<DownloaderTarget>.getRSSOptions(): Map<String, List<DownloadableOption>
 fun List<DownloaderTarget>.getFTPOptions(): List<DownloadableOption> {
     val options = this.flatMap { it.options }
     return options.filter { !it.sourcePath.isNullOrBlank() && it.source == SourceType.FTP }
+}
+
+fun Image.getURL(): String {
+    return if (hasWEBP?.toBoolean() == true) {
+        "https://i.styx.moe/$GUID.webp"
+    } else if (hasJPG?.toBoolean() == true) {
+        "https://i.styx.moe/$GUID.jpg"
+    } else if (hasPNG?.toBoolean() == true) {
+        "https://i.styx.moe/$GUID.png"
+    } else {
+        return externalURL as String
+    }
 }
