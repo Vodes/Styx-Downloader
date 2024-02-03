@@ -74,7 +74,10 @@ class IRCClient(private val server: String, private val channels: List<String>) 
         val tempDir = File(Main.appDir, "Temp-XDCC-Downloads")
         tempDir.mkdirs()
         Log.i(logSource) { "Downloading File '${transfer.file.name}' from '${transfer.nick}'" }
-        transfer.receive(File(tempDir, transfer.file.name), false)
+        transfer.receive(File(tempDir, transfer.file.name).also {
+            if (it.exists())
+                it.delete()
+        }, false)
     }
 
     override fun onFileTransferFinished(transfer: DccFileTransfer, e: Exception?) {
