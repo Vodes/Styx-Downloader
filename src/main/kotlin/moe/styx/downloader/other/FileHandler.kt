@@ -27,13 +27,13 @@ fun String.fillTokens(
     option: DownloadableOption,
     anitomyResults: AnitomyResults
 ): String {
-    var filled = this
+    var filled = this.trim()
     val media = getDBClient().executeGet { getMedia(mapOf("GUID" to target.mediaID)) }.first()
     val (episode, _) = anitomyResults.parseEpisodeAndVersion(option.episodeOffset)!!
 
     filled = filled.replaceAll(media.name, "%name%")
-    filled = filled.replaceAll(media.nameEN ?: "", "%en%", "%english%")
-    filled = filled.replaceAll(media.nameJP ?: "", "%rom%", "%romaji%")
+    filled = filled.replaceAll(media.nameEN ?: "", "%en%", "%english%").trim()
+    filled = filled.replaceAll(media.nameJP ?: "", "%rom%", "%romaji%").trim()
     filled = filled.replace(
         TokenRegex.absoluteEpisodeToken,
         anitomyResults.find { it.category.toString() eqI "kElementEpisodeNumber" }?.value ?: ""
@@ -61,7 +61,7 @@ fun String.fillTokens(
     val groupMatch = TokenRegex.groupToken.findAll(filled).toList()
     if (groupMatch.isNotEmpty()) {
         if (group.isNullOrBlank()) {
-            groupMatch.forEach { filled = filled.replace(it.groups[0]!!.value, "") }
+            groupMatch.forEach { filled = filled.replace(it.groups[0]!!.value, "").trim() }
         } else {
             groupMatch.forEach {
                 val toReplace = it.groups[0]!!.value
@@ -72,5 +72,5 @@ fun String.fillTokens(
         }
     }
 
-    return filled
+    return filled.trim()
 }
