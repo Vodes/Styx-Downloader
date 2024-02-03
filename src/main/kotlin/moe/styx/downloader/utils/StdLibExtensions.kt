@@ -31,3 +31,36 @@ fun LocalDateTime.formattedStr(): String {
     return "${this.year}-${this.monthNumber.padString()}-${this.dayOfMonth.padString()} " +
             "${this.hour.padString()}:${this.minute.padString()}:${this.second.padString()}"
 }
+
+fun String.replaceAll(replacement: String, vararg values: String, ignoreCase: Boolean = true): String {
+    var new = this
+    values.forEach {
+        new = new.replace(it, replacement, ignoreCase)
+    }
+    return new
+}
+
+fun String.containsAny(vararg values: String, ignoreCase: Boolean = true): Boolean {
+    for (value in values) {
+        if (this.contains(value, ignoreCase))
+            return true
+    }
+    return false
+}
+
+fun List<String>.anyEquals(value: String, ignoreCase: Boolean = true): Boolean {
+    for (element in this) {
+        if (element.equals(value, ignoreCase))
+            return true
+    }
+    return false
+}
+
+
+fun List<String>.containsIgnoreCase(value: String): Boolean {
+    for (element in this) {
+        if (element.contains(value, true))
+            return true
+    }
+    return false
+}

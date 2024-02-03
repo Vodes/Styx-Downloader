@@ -12,3 +12,17 @@ object RegexCollection {
         "(?<connection>ftpe?s?):\\/\\/(?:(?<user>.+):(?<pass>.+)@)?(?<host>(?:[a-zA-Z0-9]+\\.?)+)(?::(?<port>\\d+))?(?<path>\\/.+)?"
             .toRegex(RegexOption.IGNORE_CASE)
 }
+
+object TokenRegex {
+    val groupToken = "%(?:release_group|group)(?<b>_b)?(?<p>_p)?%".toRegex(RegexOption.IGNORE_CASE)
+    val regularEpisodeToken = "%(?:episode_number|ep)(?<e>_e)?%".toRegex(RegexOption.IGNORE_CASE)
+    val absoluteEpisodeToken = "%(?:episode_number_a|ep_a)%".toRegex(RegexOption.IGNORE_CASE)
+    val offsetEpisodeToken =
+        "%(?:episode_number_o_|episode_number_off_|episode_number_offset_|ep_o_)(?<offset>-?\\d+(?:\\.\\d+)?)%".toRegex(RegexOption.IGNORE_CASE)
+}
+
+fun MatchResult.wantsBrackets() = this.groupValues.anyEquals("_b")
+
+fun MatchResult.wantsParentheses() = this.groupValues.anyEquals("_p")
+
+fun MatchResult.wantsEPrefix() = this.groupValues.anyEquals("_e")
