@@ -8,6 +8,7 @@ import moe.styx.downloader.Main
 import moe.styx.downloader.episodeWanted
 import moe.styx.downloader.getDBClient
 import moe.styx.downloader.other.handleFile
+import moe.styx.downloader.parsing.ParseDenyReason
 import moe.styx.downloader.parsing.ParseResult
 import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.getFTPOptions
@@ -16,6 +17,7 @@ import moe.styx.downloader.utils.parentIn
 import moe.styx.types.DownloadableOption
 import moe.styx.types.DownloaderTarget
 import java.io.File
+import java.time.temporal.ChronoUnit
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -77,12 +79,19 @@ object FTPHandler {
     ): List<Pair<Pair<String, Long>, ParseResult>> {
         val remoteDir = if (dir.trim().startsWith("/")) dir.trim() else "/FTP-Zugang Server/${dir.trim()}"
 
-        val cutOff = Clock.System.now().toJavaInstant().minusSeconds(20)
+        val now = Clock.System.now().toJavaInstant()
+        val cutOff = now.minusSeconds(20)
         val parent = option parentIn targets
-        val files = client.listFiles(remoteDir).filter { it.isFile && it.isValid && it.timestampInstant.isBefore(cutOff) }
+        val files = client.listFiles(remoteDir).filter { it.isFile && it.isValid }
 
         return files.map {
-            ("$remoteDir/${it.name}" to it.size) to option.episodeWanted(it.name, parent)
+            val fileStuff = ("$remoteDir/${it.name}" to it.size)
+            return@map if (it.timestampInstant.isBefore(cutOff)) {
+                fileStuff to ParseResult.DENIED(ParseDenyReason.FileIsTooNew)
+            } else if (!option.ignoreDelay && it.timestampInstant.isBefore(now.minus(1, ChronoUnit.HOURS))) {
+                fileStuff to ParseResult.DENIED(ParseDenyReason.PostIsTooOld)
+            } else
+                fileStuff to option.episodeWanted(it.name, parent)
         }
     }
 }
