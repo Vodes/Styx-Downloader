@@ -28,12 +28,18 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
     implementation("com.github.ajalt.mordant:mordant:2.2.0")
+    implementation("de.androidpit:color-thief:1.1.2")
     // https://mvnrepository.com/artifact/com.apptasticsoftware/rssreader
     implementation("com.apptasticsoftware:rssreader:3.6.0")
     // https://mvnrepository.com/artifact/com.mysql/mysql-connector-j
     implementation("com.mysql:mysql-connector-j:8.2.0")
     // https://mvnrepository.com/artifact/org.apache.commons/commons-collections4
     implementation("org.apache.commons:commons-collections4:4.4")
+    // https://mvnrepository.com/artifact/com.twelvemonkeys.imageio/imageio-core
+    implementation("com.twelvemonkeys.imageio:imageio-core:3.10.1")
+    // https://mvnrepository.com/artifact/com.twelvemonkeys.imageio/imageio-webp
+    runtimeOnly("com.twelvemonkeys.imageio:imageio-webp:3.10.1")
+
     // https://mvnrepository.com/artifact/com.dgtlrepublic/anitomyJ
     // implementation("com.dgtlrepublic:anitomyJ:0.0.7")
     // Better fork, randomly found and just using the jitpack builds
