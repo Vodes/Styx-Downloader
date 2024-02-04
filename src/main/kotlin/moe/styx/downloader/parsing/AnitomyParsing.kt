@@ -11,10 +11,11 @@ typealias AnitomyResults = List<Element>
 
 fun parseMetadata(toParse: String): AnitomyResults {
     var toParse = toParse
-    
+
     val repackMatch = RegexCollection.repackRegex.find(toParse)
     if (repackMatch != null)
-        toParse = toParse.replace(repackMatch.groups[0]!!.value, repackMatch.groups[1]?.let { " v${it.value.toIntOrNull()?.plus(1) ?: 2}" } ?: " v2")
+        toParse =
+            toParse.replace(repackMatch.groups[0]!!.value, repackMatch.groups[1]?.let { ".V${it.value.toIntOrNull()?.plus(1) ?: 2}." } ?: ".V2.")
 
     val match = RegexCollection.fixPattern.matchEntire(toParse)
     if (match != null) {
