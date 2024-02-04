@@ -86,7 +86,7 @@ object FTPHandler {
 
         return files.map {
             val fileStuff = ("$remoteDir/${it.name}" to it.size)
-            return@map if (it.timestampInstant.isBefore(cutOff)) {
+            return@map if (it.timestampInstant.isAfter(cutOff)) {
                 fileStuff to ParseResult.DENIED(ParseDenyReason.FileIsTooNew)
             } else if (!option.ignoreDelay && it.timestampInstant.isBefore(now.minus(1, ChronoUnit.HOURS))) {
                 fileStuff to ParseResult.DENIED(ParseDenyReason.PostIsTooOld)
