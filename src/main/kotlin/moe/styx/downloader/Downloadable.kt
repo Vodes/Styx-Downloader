@@ -5,6 +5,7 @@ import moe.styx.db.getEntries
 import moe.styx.downloader.parsing.ParseDenyReason
 import moe.styx.downloader.parsing.ParseResult
 import moe.styx.downloader.parsing.parseEpisodeAndVersion
+import moe.styx.downloader.utils.RegexCollection
 import moe.styx.types.DownloadableOption
 import moe.styx.types.DownloaderTarget
 import kotlin.math.abs
@@ -64,6 +65,7 @@ fun List<DownloaderTarget>.matchesAny(toMatch: String?, rss: Boolean = false): P
 }
 
 fun DownloadableOption.matches(toMatch: String, rss: Boolean = false): Boolean {
+    val toMatch = toMatch.replace(RegexCollection.repackRegex, "")
     var regex = this.fileRegex.toRegex(RegexOption.IGNORE_CASE)
     if (rss) {
         regex = if (!this.rssRegex.isNullOrBlank()) this.rssRegex!!.toRegex(RegexOption.IGNORE_CASE) else
