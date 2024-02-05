@@ -38,7 +38,7 @@ fun List<Element>.parseEpisodeAndVersion(offset: Int?): Pair<String, Int>? {
         var episodeDouble = episode.toDoubleOrNull() ?: return null
         val format = DecimalFormat("0.#")
         episodeDouble += offset
-        if (episodeDouble > 0) {
+        if (episodeDouble >= 0) {
             episode = if (episodeDouble < 10) "0${format.format(episodeDouble)}" else format.format(episodeDouble)
         } else {
             val fileName = this.find { it.category.toString() eqI "kElementFileName" }?.value
