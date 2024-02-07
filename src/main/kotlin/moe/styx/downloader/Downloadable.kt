@@ -8,6 +8,7 @@ import moe.styx.downloader.parsing.parseEpisodeAndVersion
 import moe.styx.downloader.utils.RegexCollection
 import moe.styx.types.DownloadableOption
 import moe.styx.types.DownloaderTarget
+import java.io.File
 import kotlin.math.abs
 
 fun getDBClient(database: String = "Styx2"): StyxDBClient {
@@ -34,7 +35,7 @@ fun DownloadableOption.episodeWanted(toMatch: String, parent: DownloaderTarget, 
     val existingOptionVal = listOf(parent).matchesAny(dbEpisode?.originalName, false)?.second?.priority ?: -1
     if (dbEpisode != null && existingOptionVal == priority) {
         val existingData = parseEpisodeAndVersion(dbEpisode.originalName ?: "", episodeOffset)
-        if (existingData != null && version <= existingData.second)
+        if (existingData != null && version <= existingData.second && File(dbEpisode.filePath).exists())
             return ParseResult.DENIED(ParseDenyReason.SameVersionPresent)
     }
     // Return false if we already have a better version of this episode

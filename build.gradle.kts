@@ -20,7 +20,7 @@ repositories {
 
 dependencies {
     //implementation("moe.styx:styx-types:0.3")
-    implementation("moe.styx:styx-db:0.4")
+    implementation("moe.styx:styx-db:0.5")
     implementation("com.github.Vodes:PircBot:873bc4aa78")
     implementation("net.peanuuutz.tomlkt:tomlkt:0.3.7")
     implementation("org.javacord:javacord:3.8.0")
@@ -29,6 +29,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
     implementation("com.github.ajalt.mordant:mordant:2.2.0")
     implementation("de.androidpit:color-thief:1.1.2")
+    // https://mvnrepository.com/artifact/com.google.guava/guava
+    implementation("com.google.guava:guava:33.0.0-jre")
     // https://mvnrepository.com/artifact/com.apptasticsoftware/rssreader
     implementation("com.apptasticsoftware:rssreader:3.6.0")
     // https://mvnrepository.com/artifact/com.mysql/mysql-connector-j

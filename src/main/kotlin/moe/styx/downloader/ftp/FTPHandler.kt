@@ -58,6 +58,7 @@ object FTPHandler {
                     val results = checkDir(option.sourcePath!!, option, targets, client).filter { it.second is ParseResult.OK }
                     for ((filePair, parseResult) in results) {
                         val result = parseResult as ParseResult.OK
+                        Log.d("FTPHandler in dir: ${option.sourcePath}") { "Downloading: ${File(filePair.first).name}" }
                         val outFile = File(tempDir, File(filePair.first).name)
                         client.downloadFile(filePair.first, outFile, filePair.second)
                         if (outFile.exists())

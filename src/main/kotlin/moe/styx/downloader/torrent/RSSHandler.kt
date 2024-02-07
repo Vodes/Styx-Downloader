@@ -49,6 +49,7 @@ object RSSHandler {
                     val results = checkFeed(feedURL, options, targets).filter { it.second is ParseResult.OK }
                     for ((item, parseResult) in results) {
                         val result = parseResult as ParseResult.OK
+                        Log.d("RSSHandler for Feed: $feedURL") { "Downloading: ${item.title}" }
                         val torrent = torrentClient.addTorrentByURL(
                             item.getTorrentURL(),
                             if (result.option.keepSeeding) Main.config.torrentConfig.defaultSeedDir else Main.config.torrentConfig.defaultNonSeedDir

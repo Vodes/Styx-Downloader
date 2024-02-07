@@ -79,5 +79,6 @@ class FTPClient(
         val out = LimitedOutputStream(target, targetSize)
         client.retrieveFile(remote, out)
         out.close()
+        Log.i("FTPClient at: $host") { "Downloaded file: ${target.name}" }
     }
 }
