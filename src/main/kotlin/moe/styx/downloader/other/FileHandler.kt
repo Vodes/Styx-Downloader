@@ -211,7 +211,10 @@ fun String.fillTokens(
         }
     }
 
-    val group = anitomyResults.find { it.category.toString() eqI "kElementReleaseGroup" }?.value
+    var group = anitomyResults.find { it.category.toString() eqI "kElementReleaseGroup" }?.value
+    if (group != null && group.containsAny("JapDub", "GerJapDub", "E-AC-3", "EAC3", "EAC-3", "GerEngSub", "GerSub", "EngSub")) {
+        group = "GerFTP"
+    }
     val groupMatch = TokenRegex.groupToken.findAll(filled).toList()
     if (groupMatch.isNotEmpty()) {
         if (group.isNullOrBlank()) {
