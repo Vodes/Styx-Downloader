@@ -133,11 +133,12 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
             getDBClient("Styx-Library").executeAndClose Legacy@{
                 val anime = getLegacyAnime(mapOf("GUID" to media.GUID)).firstOrNull() ?: return@Legacy
                 val legacyEP = getLegacyEpisodes(mapOf("Name" to anime.name)).find { it.ep.toDoubleOrNull() == entry.entryNumber.toDoubleOrNull() }
+                val convertedSize = String.format("%.2f", entry.fileSize.toDouble() / (1024 * 1024)).toDouble()
                 if (legacyEP != null)
                     save(
                         legacyEP.copy(
                             filePath = entry.filePath,
-                            fileSize = entry.fileSize.toDouble() / (1024 * 1024),
+                            fileSize = convertedSize,
                             prevName = entry.originalName
                         )
                     )
@@ -155,7 +156,7 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
                             null,
                             null,
                             entry.filePath,
-                            entry.fileSize.toDouble() / (1024 * 1024)
+                            convertedSize
                         )
                     )
                 }
