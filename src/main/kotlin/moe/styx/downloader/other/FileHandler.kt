@@ -39,7 +39,7 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
     val output = File(outDir, outname)
     val previous = getDBClient().executeGet { getEntries(mapOf("mediaID" to media.GUID)) }
         .find { it.entryNumber.toDoubleOrNull() == episodeWithOffset.toDoubleOrNull() }
-    if (option.processingOptions != null) {
+    if (option.processingOptions != null && option.processingOptions!!.needsMuxtools()) {
         val logFile = File(muxDir, "Mux Log - ${Log.getFormattedTime().replace(":", "-")}.txt")
         val commands = getBaseCommand(option.processingOptions!!)
         commands.add("-o=${File(muxDir, output.name)}")
@@ -84,7 +84,16 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
     }
     output.setTitleAndFixMeta(title)
 
-
+    // TODO: Implement this in muxtools
+    if (option.processingOptions != null && option.processingOptions!!.fixTagging) {
+        val arhcFile = File(Main.appDir, "ARHC.jar")
+        val javaExe = getExecutableFromPath("java")
+        if (arhcFile.exists() && javaExe?.exists() == true) {
+            ProcessBuilder(listOf(javaExe.absolutePath, "-jar", arhcFile.absolutePath, "-f", output.absolutePath, "-ft"))
+                .inheritIO()
+                .directory(muxDir).start().waitFor()
+        }
+    }
 
     if (previous != null) {
         val previousFile = File(previous.filePath)
