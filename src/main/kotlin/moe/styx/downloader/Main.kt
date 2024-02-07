@@ -7,12 +7,14 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.cookies.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.Clock
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import moe.styx.downloader.ftp.FTPHandler
 import moe.styx.downloader.other.IRCClient
 import moe.styx.downloader.torrent.RSSHandler
 import moe.styx.downloader.utils.launchGlobal
+import moe.styx.types.Changes
 import moe.styx.types.json
 import net.peanuuutz.tomlkt.Toml
 import java.io.File
@@ -33,6 +35,15 @@ object Main {
 
     fun isInitialized(): Boolean {
         return ::config.isInitialized
+    }
+
+    fun updateEntryChanges() {
+        val changesFile = File(appDir.parentFile, "changes.json")
+        if (!changesFile.exists())
+            return
+
+        val changes = runCatching { json.decodeFromString<Changes>(changesFile.readText()) }.getOrNull()
+        changesFile.writeText(json.encodeToString(Changes(changes?.media ?: 0, Clock.System.now().epochSeconds)))
     }
 }
 
