@@ -33,7 +33,7 @@ fun DownloadableOption.episodeWanted(toMatch: String, parent: DownloaderTarget, 
 
     val (episode, version) = parseEpisodeAndVersion(toMatch, episodeOffset)
         ?: return ParseResult.FAILED(ParseDenyReason.InvalidEpisodeNumber)
-    
+
     // Check if we already have the episode in the database
     val dbEpisode = getDBClient().executeGet { getEntries(mapOf("mediaID" to parent.mediaID)) }
         .find { it.entryNumber.toDoubleOrNull() == episode.toDoubleOrNull() }
@@ -49,7 +49,8 @@ fun DownloadableOption.episodeWanted(toMatch: String, parent: DownloaderTarget, 
     if (priority < existingOptionVal)
         return ParseResult.DENIED(ParseDenyReason.BetterVersionPresent)
     // Return false if a "worse" version is required to exist (for muxing purposes perhaps) but doesn't yet
-    if ((abs(existingOptionVal - priority) > 2 || existingOptionVal < 0) && waitForPrevious)
+    val diff = abs(existingOptionVal - priority)
+    if ((diff > 1 || existingOptionVal < 0) && waitForPrevious)
         return ParseResult.DENIED(ParseDenyReason.WaitingForPreviousOption)
 
     // Yay we need this file
