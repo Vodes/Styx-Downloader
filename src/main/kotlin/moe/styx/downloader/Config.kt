@@ -11,6 +11,7 @@ import java.io.File
 @Serializable
 data class Config(
     val debug: Boolean = false,
+    val ignoreSpecialsAndPoint5: Boolean = true,
     val defaultFTPConnectionString: String = "",
     val httpUserAgent: String = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
     @SerialName("DatabaseConfig")

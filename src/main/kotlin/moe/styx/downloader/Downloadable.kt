@@ -25,8 +25,15 @@ fun DownloadableOption.episodeWanted(toMatch: String, parent: DownloaderTarget, 
     if (!this.matches(toMatch, rss)) {
         return ParseResult.FAILED(ParseDenyReason.NoOptionMatched)
     }
+    // Ignore stuff like "One Piece - Egghead SP1" or "One Piece E1078.5"
+    if (Main.config.ignoreSpecialsAndPoint5) {
+        if (RegexCollection.specialEpisodeRegex.find(toMatch) != null)
+            return ParseResult.DENIED(ParseDenyReason.IsSpecialOrFiller)
+    }
+
     val (episode, version) = parseEpisodeAndVersion(toMatch, episodeOffset)
         ?: return ParseResult.FAILED(ParseDenyReason.InvalidEpisodeNumber)
+    
     // Check if we already have the episode in the database
     val dbEpisode = getDBClient().executeGet { getEntries(mapOf("mediaID" to parent.mediaID)) }
         .find { it.entryNumber.toDoubleOrNull() == episode.toDoubleOrNull() }

@@ -10,7 +10,8 @@ enum class ParseDenyReason {
     SameVersionPresent,
     WaitingForPreviousOption,
     PostIsTooOld,
-    FileIsTooNew
+    FileIsTooNew,
+    IsSpecialOrFiller
 }
 
 sealed class ParseResult {
