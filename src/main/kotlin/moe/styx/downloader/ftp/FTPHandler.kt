@@ -45,6 +45,7 @@ object FTPHandler {
                 val targets = getDBClient().executeGet { getTargets() }
                 val ftpOptions = targets.getFTPOptions()
                 for (option in ftpOptions) {
+                    var downloadedSomething = false
                     var client = defaultFTPClient.connect()
                     if (client == null) {
                         delay(oneMinute)
@@ -61,13 +62,18 @@ object FTPHandler {
                         Log.d("FTPHandler in dir: ${option.sourcePath}") { "Downloading: ${File(filePair.first).name}" }
                         val outFile = File(tempDir, File(filePair.first).name)
                         client.downloadFile(filePair.first, outFile, filePair.second)
+                        downloadedSomething = true
                         if (outFile.exists())
                             handleFile(outFile, result.target, result.option)
                         delay(10000)
                     }
                     client.disconnect()
-                    delay(10000)
+                    if (downloadedSomething)
+                        delay(10000)
+                    else
+                        delay(4000)
                 }
+                delay(6.toDuration(DurationUnit.MINUTES))
             }
         }
     }
