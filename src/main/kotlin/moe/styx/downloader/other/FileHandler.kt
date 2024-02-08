@@ -218,6 +218,9 @@ fun String.fillTokens(
     if (group != null && group.containsAny("JapDub", "GerJapDub", "E-AC-3", "EAC3", "EAC-3", "GerEngSub", "GerSub", "EngSub")) {
         group = "GerFTP"
     }
+    if (option.processingOptions?.needsMuxtools() == true) {
+        group = if (group.isNullOrBlank()) "Styx" else "$group-Styx"
+    }
     val groupMatch = TokenRegex.groupToken.findAll(filled).toList()
     if (groupMatch.isNotEmpty()) {
         if (group.isNullOrBlank()) {
