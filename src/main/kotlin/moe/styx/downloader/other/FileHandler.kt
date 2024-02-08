@@ -104,11 +104,12 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
     }
 
     getDBClient().executeAndClose {
+        val time = Clock.System.now().epochSeconds
         val entry = previous?.copy(filePath = output.absolutePath, fileSize = output.length(), originalName = file.name)
             ?: MediaEntry(
                 UUID.randomUUID().toString().uppercase(),
                 media.GUID,
-                Clock.System.now().epochSeconds,
+                time,
                 episodeWithOffset,
                 null,
                 null,
@@ -158,7 +159,7 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
                         LegacyEpisodeInfo(
                             UUID.randomUUID().toString().uppercase(),
                             entry.GUID,
-                            "",
+                            time.toDateString(),
                             anime.name,
                             entry.entryNumber,
                             entry.originalName,
