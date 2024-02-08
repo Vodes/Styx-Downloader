@@ -92,7 +92,8 @@ object RSSHandler {
                             return@forEach
                         val copy = it.copyTo(File(seedDir.parentFile, it.name), overwrite = true)
                         copied.add(it.name)
-                        handleFile(copy, parseResult.target, parseResult.option)
+                        if (handleFile(copy, parseResult.target, parseResult.option))
+                            copy.delete()
                     }
                 }
                 if (copied.size > 30)

@@ -20,10 +20,10 @@ import java.util.*
 
 private val epFormat = DecimalFormat("0.#")
 
-fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption) {
+fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption): Boolean {
     val anitomyResults = parseMetadata(file.name)
-    val (episodeWithOffset, version) = anitomyResults.parseEpisodeAndVersion(option.episodeOffset) ?: return
-    val media = getDBClient().executeGet { getMedia(mapOf("GUID" to target.mediaID)) }.firstOrNull() ?: return
+    val (episodeWithOffset, version) = anitomyResults.parseEpisodeAndVersion(option.episodeOffset) ?: return false
+    val media = getDBClient().executeGet { getMedia(mapOf("GUID" to target.mediaID)) }.firstOrNull() ?: return false
     var outname = (if (option.overrideNamingTemplate.isNullOrBlank()) target.namingTemplate else option.overrideNamingTemplate)!!
         .fillTokens(media, option, anitomyResults).toFileSystemCompliantName()
     if (!outname.endsWith(".mkv", true))
@@ -57,7 +57,7 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
         ) {
             if (previous == null || !File(previous.filePath).exists()) {
                 Log.w("FileHandler for File: ${file.name}") { "No processing applied due to missing a previous entry." }
-                return
+                return false
             }
             commands.add(previous.filePath)
             logFile.writeText("Input 1: ${File(previous.filePath).name}\nInput2: ${file.name}\n")
@@ -78,7 +78,7 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
         if (result == 0 && muxedFile.exists()) {
             Files.move(muxedFile.toPath(), output.toPath(), StandardCopyOption.REPLACE_EXISTING)
         } else
-            return
+            return false
     } else {
         Files.move(file.toPath(), output.toPath(), StandardCopyOption.REPLACE_EXISTING)
     }
@@ -178,6 +178,7 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
 
         Main.updateEntryChanges()
     }
+    return true
 }
 
 fun String.fillTokens(
