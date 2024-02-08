@@ -60,7 +60,7 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
                 return false
             }
             commands.add(previous.filePath)
-            logFile.writeText("Input 1: ${File(previous.filePath).name}\nInput2: ${file.name}\n")
+            logFile.writeText("Input 1: ${File(previous.filePath).name}\nInput 2: ${file.name}\n")
         } else
             logFile.writeText("Input 1: ${file.name}\n")
 
@@ -77,6 +77,7 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
         val muxedFile = File(muxDir, output.name)
         if (result == 0 && muxedFile.exists()) {
             Files.move(muxedFile.toPath(), output.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            file.delete()
         } else
             return false
     } else {
