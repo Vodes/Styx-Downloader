@@ -84,15 +84,16 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
     }
     output.setTitleAndFixMeta(title)
 
-    // TODO: Implement this in muxtools
     if (option.processingOptions != null && option.processingOptions!!.fixTagging) {
-        val arhcFile = File(Main.appDir, "ARHC.jar")
-        val javaExe = getExecutableFromPath("java")
-        if (arhcFile.exists() && javaExe?.exists() == true) {
-            ProcessBuilder(listOf(javaExe.absolutePath, "-jar", arhcFile.absolutePath, "-f", output.absolutePath, "-ft"))
-                .inheritIO()
-                .directory(muxDir).start().waitFor()
-        }
+        val commands = listOf(
+            getExecutableFromPath("python")!!.absolutePath,
+            "-m",
+            "muxtools_styx",
+            "-o=${output.absolutePath}",
+            "--fix-tagging",
+            output.absolutePath
+        )
+        ProcessBuilder(commands).redirectOutput(ProcessBuilder.Redirect.DISCARD).start().waitFor()
     }
 
     if (previous != null) {
