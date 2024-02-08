@@ -41,7 +41,7 @@ object RSSHandler {
         torrentClient = client
         val oneMinute = 1.toDuration(DurationUnit.MINUTES)
         launchThreaded {
-            delay(oneMinute)
+            delay(30.toDuration(DurationUnit.SECONDS))
             while (true) {
                 val targets = getDBClient().executeGet { getTargets() }
                 val rssOptions = targets.getRSSOptions()
@@ -62,7 +62,10 @@ object RSSHandler {
                         if (!result.option.keepSeeding)
                             waitAndDelete(torrent)
                     }
-                    delay(oneMinute)
+                    if (feedURL.contains("animetosho"))
+                        delay(10000)
+                    else
+                        delay(oneMinute)
                 }
                 delay(12.toDuration(DurationUnit.MINUTES))
             }
@@ -70,6 +73,7 @@ object RSSHandler {
         launchThreaded {
             val tempDir = File(Main.config.torrentConfig.defaultNonSeedDir)
             val seedDir = File(Main.config.torrentConfig.defaultSeedDir)
+            val copied = mutableListOf<String>()
             while (true) {
                 val cutOff = Clock.System.now().toEpochMilliseconds() - 30000
                 val targets = getDBClient().executeGet { getTargets() }
@@ -84,12 +88,15 @@ object RSSHandler {
                 if (seedDir.exists() && seedDir.isDirectory) {
                     (seedDir.listFiles()?.filter { it.isFile && it.lastModified() < cutOff } ?: emptyList<File>()).forEach {
                         val parseResult = targets.episodeWanted(it.name)
-                        if (parseResult !is ParseResult.OK)
+                        if (parseResult !is ParseResult.OK || copied.anyEquals(it.name))
                             return@forEach
-                        val copy = it.copyTo(File(tempDir, it.name), overwrite = true)
+                        val copy = it.copyTo(File(seedDir.parentFile, it.name), overwrite = true)
+                        copied.add(it.name)
                         handleFile(copy, parseResult.target, parseResult.option)
                     }
                 }
+                if (copied.size > 30)
+                    copied.clear()
                 delay(10000)
             }
         }
