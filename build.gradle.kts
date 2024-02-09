@@ -40,6 +40,12 @@ dependencies {
     implementation("org.slf4j:slf4j-simple:2.0.9")
     implementation("commons-net:commons-net:3.10.0")
 
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
+    implementation("io.ktor:ktor-client-java:$ktorVersion")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+    implementation("io.ktor:ktor-client-encoding:$ktorVersion")
+
     testImplementation(kotlin("test"))
 }
 
