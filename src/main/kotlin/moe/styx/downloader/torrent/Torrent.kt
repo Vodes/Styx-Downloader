@@ -2,8 +2,8 @@ package moe.styx.downloader.torrent
 
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import moe.styx.common.extension.eqI
 import moe.styx.downloader.utils.Log
-import moe.styx.types.eqI
 
 abstract class TorrentClient(val user: String, val pass: String) {
 

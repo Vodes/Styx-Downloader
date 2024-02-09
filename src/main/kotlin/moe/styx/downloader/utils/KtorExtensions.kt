@@ -5,7 +5,7 @@ import io.ktor.http.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.buildJsonObject
-import moe.styx.types.json
+import moe.styx.common.json
 
 inline fun <reified T> HttpRequestBuilder.setGenericJsonBody(body: T) {
     this.contentType(ContentType.Application.Json)

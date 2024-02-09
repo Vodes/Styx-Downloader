@@ -10,6 +10,11 @@ import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
+import moe.styx.common.data.DownloadableOption
+import moe.styx.common.data.DownloaderTarget
+import moe.styx.common.extension.anyEquals
+import moe.styx.common.extension.eqI
+import moe.styx.common.util.launchThreaded
 import moe.styx.db.getTargets
 import moe.styx.downloader.Main
 import moe.styx.downloader.episodeWanted
@@ -19,9 +24,6 @@ import moe.styx.downloader.other.handleFile
 import moe.styx.downloader.parsing.ParseDenyReason
 import moe.styx.downloader.parsing.ParseResult
 import moe.styx.downloader.utils.*
-import moe.styx.types.DownloadableOption
-import moe.styx.types.DownloaderTarget
-import moe.styx.types.eqI
 import java.io.File
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter

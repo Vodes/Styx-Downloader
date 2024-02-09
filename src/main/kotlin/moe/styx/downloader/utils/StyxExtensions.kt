@@ -1,6 +1,7 @@
 package moe.styx.downloader.utils
 
-import moe.styx.types.*
+import moe.styx.common.data.*
+import moe.styx.common.extension.toBoolean
 
 infix fun DownloadableOption.parentIn(list: List<DownloaderTarget>): DownloaderTarget {
     return list.find { it.options.find { opt -> opt == this } != null }!!

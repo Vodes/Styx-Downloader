@@ -2,10 +2,10 @@ package moe.styx.downloader
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import moe.styx.common.extension.eqI
 import moe.styx.downloader.torrent.TorrentClient
 import moe.styx.downloader.torrent.flood.FloodClient
 import moe.styx.downloader.utils.Log
-import moe.styx.types.eqI
 import java.io.File
 
 @Serializable

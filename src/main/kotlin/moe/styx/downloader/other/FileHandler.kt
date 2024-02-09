@@ -2,6 +2,9 @@ package moe.styx.downloader.other
 
 import kotlinx.datetime.Clock
 import kotlinx.serialization.encodeToString
+import moe.styx.common.data.*
+import moe.styx.common.data.MediaInfo
+import moe.styx.common.extension.*
 import moe.styx.db.*
 import moe.styx.downloader.Main
 import moe.styx.downloader.getDBClient
@@ -10,8 +13,6 @@ import moe.styx.downloader.parsing.parseEpisodeAndVersion
 import moe.styx.downloader.parsing.parseMetadata
 import moe.styx.downloader.utils.*
 import moe.styx.downloader.utils.Log
-import moe.styx.types.*
-import moe.styx.types.MediaInfo
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption

@@ -10,12 +10,12 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
+import moe.styx.common.data.Changes
+import moe.styx.common.json
 import moe.styx.downloader.ftp.FTPHandler
 import moe.styx.downloader.other.IRCClient
 import moe.styx.downloader.torrent.RSSHandler
 import moe.styx.downloader.utils.launchGlobal
-import moe.styx.types.Changes
-import moe.styx.types.json
 import net.peanuuutz.tomlkt.Toml
 import java.io.File
 import kotlin.system.exitProcess

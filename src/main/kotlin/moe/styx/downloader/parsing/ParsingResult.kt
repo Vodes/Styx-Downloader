@@ -1,7 +1,7 @@
 package moe.styx.downloader.parsing
 
-import moe.styx.types.DownloadableOption
-import moe.styx.types.DownloaderTarget
+import moe.styx.common.data.DownloadableOption
+import moe.styx.common.data.DownloaderTarget
 
 enum class ParseDenyReason {
     NoOptionMatched,

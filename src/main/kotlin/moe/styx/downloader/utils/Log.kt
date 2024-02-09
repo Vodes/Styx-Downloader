@@ -5,6 +5,7 @@ import com.github.ajalt.mordant.terminal.Terminal
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import moe.styx.common.extension.formattedStr
 import moe.styx.downloader.Main
 
 object Log {

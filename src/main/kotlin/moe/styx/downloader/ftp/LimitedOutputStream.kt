@@ -2,8 +2,8 @@ package moe.styx.downloader.ftp
 
 import com.google.common.util.concurrent.RateLimiter
 import kotlinx.coroutines.delay
+import moe.styx.common.util.launchThreaded
 import moe.styx.downloader.utils.Log
-import moe.styx.downloader.utils.launchThreaded
 import moe.styx.downloader.utils.readableSize
 import java.io.File
 import java.io.FileOutputStream

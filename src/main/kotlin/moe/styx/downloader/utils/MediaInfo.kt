@@ -5,8 +5,10 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
-import moe.styx.types.eqI
-import moe.styx.types.json
+import moe.styx.common.extension.eqI
+import moe.styx.common.extension.equalsAny
+import moe.styx.common.isWindows
+import moe.styx.common.json
 import java.io.File
 import java.util.concurrent.TimeUnit
 
@@ -59,7 +61,7 @@ data class Track(
 fun File.getMediaInfo(): MediaInfo? {
     val mediainfoExecutable = getExecutableFromPath("mediainfo") ?: return null
 
-    val process: Process = if (isWindows) {
+    val process: Process = if (isWindows()) {
         val command = "\"${mediainfoExecutable.absolutePath}\" --Output=JSON \"${this.absolutePath}\""
         ProcessBuilder(command)
             .redirectOutput(ProcessBuilder.Redirect.PIPE)

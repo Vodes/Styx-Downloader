@@ -6,6 +6,9 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.runBlocking
+import moe.styx.common.data.Media
+import moe.styx.common.data.MediaEntry
+import moe.styx.common.extension.eqI
 import moe.styx.db.getFavourites
 import moe.styx.db.getImages
 import moe.styx.db.getUsers
@@ -14,9 +17,6 @@ import moe.styx.downloader.getDBClient
 import moe.styx.downloader.httpClient
 import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.getURL
-import moe.styx.types.Media
-import moe.styx.types.MediaEntry
-import moe.styx.types.eqI
 import org.javacord.api.DiscordApiBuilder
 import org.javacord.api.entity.message.embed.EmbedBuilder
 import java.awt.Color

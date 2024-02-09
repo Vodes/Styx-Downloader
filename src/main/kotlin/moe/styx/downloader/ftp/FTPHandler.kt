@@ -3,6 +3,9 @@ package moe.styx.downloader.ftp
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toJavaInstant
+import moe.styx.common.data.DownloadableOption
+import moe.styx.common.data.DownloaderTarget
+import moe.styx.common.util.launchThreaded
 import moe.styx.db.getTargets
 import moe.styx.downloader.Main
 import moe.styx.downloader.episodeWanted
@@ -12,10 +15,7 @@ import moe.styx.downloader.parsing.ParseDenyReason
 import moe.styx.downloader.parsing.ParseResult
 import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.getFTPOptions
-import moe.styx.downloader.utils.launchThreaded
 import moe.styx.downloader.utils.parentIn
-import moe.styx.types.DownloadableOption
-import moe.styx.types.DownloaderTarget
 import java.io.File
 import java.time.temporal.ChronoUnit
 import kotlin.time.DurationUnit

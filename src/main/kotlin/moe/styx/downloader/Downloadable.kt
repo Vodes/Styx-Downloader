@@ -1,13 +1,13 @@
 package moe.styx.downloader
 
+import moe.styx.common.data.DownloadableOption
+import moe.styx.common.data.DownloaderTarget
 import moe.styx.db.StyxDBClient
 import moe.styx.db.getEntries
 import moe.styx.downloader.parsing.ParseDenyReason
 import moe.styx.downloader.parsing.ParseResult
 import moe.styx.downloader.parsing.parseEpisodeAndVersion
 import moe.styx.downloader.utils.RegexCollection
-import moe.styx.types.DownloadableOption
-import moe.styx.types.DownloaderTarget
 import java.io.File
 import kotlin.math.abs
 

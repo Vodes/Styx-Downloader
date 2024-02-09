@@ -2,9 +2,9 @@ package moe.styx.downloader.parsing
 
 import com.dgtlrepublic.anitomyj.AnitomyJ
 import com.dgtlrepublic.anitomyj.Element
+import moe.styx.common.extension.eqI
 import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.RegexCollection
-import moe.styx.types.eqI
 import java.text.DecimalFormat
 
 typealias AnitomyResults = List<Element>

@@ -1,5 +1,7 @@
 package moe.styx.downloader.utils
 
+import moe.styx.common.extension.anyEquals
+
 object RegexCollection {
     val fixPattern = "(?<whole>(?<ep>(?:S\\d+)?[E ]\\d+)(?<version>v\\d))".toRegex(RegexOption.IGNORE_CASE)
     val singleLetterWithDot = "\\.[A-Za-z]\\.".toRegex()

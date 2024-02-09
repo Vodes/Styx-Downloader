@@ -3,6 +3,8 @@ package moe.styx.downloader.other
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import kotlinx.coroutines.runBlocking
+import moe.styx.common.data.SourceType
+import moe.styx.common.extension.eqI
 import moe.styx.db.getTargets
 import moe.styx.downloader.Main
 import moe.styx.downloader.episodeWanted
@@ -11,8 +13,6 @@ import moe.styx.downloader.httpClient
 import moe.styx.downloader.parsing.ParseResult
 import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.RegexCollection
-import moe.styx.types.SourceType
-import moe.styx.types.eqI
 import org.jibble.pircbot.DccFileTransfer
 import org.jibble.pircbot.PircBot
 import java.io.File
