@@ -15,6 +15,7 @@ import moe.styx.common.json
 import moe.styx.common.util.launchGlobal
 import moe.styx.downloader.ftp.FTPHandler
 import moe.styx.downloader.other.IRCClient
+import moe.styx.downloader.other.startBot
 import moe.styx.downloader.torrent.RSSHandler
 import net.peanuuutz.tomlkt.Toml
 import java.io.File
@@ -66,6 +67,7 @@ fun loadConfig(args: Array<String> = emptyArray()) {
 
 fun main(args: Array<String>) {
     loadConfig(args)
+    startBot()
     FTPHandler.start()
     if (Main.config.torrentConfig.defaultSeedDir.isNotBlank() && Main.config.torrentConfig.defaultNonSeedDir.isNotBlank())
         RSSHandler.start()

@@ -2,6 +2,11 @@ package moe.styx.downloader.utils
 
 import moe.styx.common.data.*
 import moe.styx.common.extension.toBoolean
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.temporal.TemporalAdjusters
 
 infix fun DownloadableOption.parentIn(list: List<DownloaderTarget>): DownloaderTarget {
     return list.find { it.options.find { opt -> opt == this } != null }!!
@@ -18,6 +23,31 @@ fun List<DownloaderTarget>.getRSSOptions(): Map<String, List<DownloadableOption>
 fun List<DownloaderTarget>.getFTPOptions(): List<DownloadableOption> {
     val options = this.flatMap { it.options }
     return options.filter { !it.sourcePath.isNullOrBlank() && it.source == SourceType.FTP }
+}
+
+fun ScheduleWeekday.dayOfWeek(): DayOfWeek {
+    return when (this) {
+        ScheduleWeekday.MONDAY -> DayOfWeek.MONDAY
+        ScheduleWeekday.TUESDAY -> DayOfWeek.TUESDAY
+        ScheduleWeekday.WEDNESDAY -> DayOfWeek.WEDNESDAY
+        ScheduleWeekday.THURSDAY -> DayOfWeek.THURSDAY
+        ScheduleWeekday.FRIDAY -> DayOfWeek.FRIDAY
+        ScheduleWeekday.SATURDAY -> DayOfWeek.SATURDAY
+        else -> DayOfWeek.SUNDAY
+    }
+}
+
+fun MediaSchedule.getTargetTime(): LocalDateTime {
+    val nowTime = LocalDateTime.now(ZoneId.of("Europe/Berlin"))
+    val now = LocalDate.now(ZoneId.of("Europe/Berlin"))
+    val adjusted = now.atTime(this.hour, this.minute)
+
+    val target = if (this.day.dayOfWeek() == now.dayOfWeek && nowTime.isBefore(adjusted))
+        adjusted
+    else
+        adjusted.with(TemporalAdjusters.next(this.day.dayOfWeek()))
+
+    return target.atZone(ZoneId.of("Europe/Berlin")).withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime()
 }
 
 fun ProcessingOptions.needsMuxtools(): Boolean {

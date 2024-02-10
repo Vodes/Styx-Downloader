@@ -65,7 +65,8 @@ data class DiscordBotConfig(
     val announceServer: String = "",
     val announceChannel: String = "",
     val pingRole: String = "",
-    val dmRole: String = ""
+    val dmRole: String = "",
+    val scheduleMessage: String = ""
 ) {
     fun isValid() = token.isNotBlank() && announceServer.isNotBlank() && announceChannel.isNotBlank()
 }
