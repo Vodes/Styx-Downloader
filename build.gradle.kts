@@ -14,7 +14,7 @@ version = "0.0.2"
 
 repositories {
     mavenCentral()
-    mavenLocal()
+    maven("https://repo.styx.moe/releases")
     maven("https://jitpack.io")
 }
 
@@ -24,9 +24,6 @@ dependencies {
 
     implementation("net.peanuuutz.tomlkt:tomlkt:0.3.7")
     implementation("org.javacord:javacord:3.8.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
     implementation("com.github.ajalt.mordant:mordant:2.2.0")
     implementation("de.androidpit:color-thief:1.1.2")
     implementation("com.google.guava:guava:33.0.0-jre")
@@ -70,17 +67,29 @@ java {
 }
 
 publishing {
+    repositories {
+        maven {
+            name = "Styx"
+            url = if (version.toString().contains("-SNAPSHOT", true))
+                uri("https://repo.styx.moe/snapshots")
+            else
+                uri("https://repo.styx.moe/releases")
+            credentials {
+                username = System.getenv("STYX_REPO_TOKEN")
+                password = System.getenv("STYX_REPO_SECRET")
+            }
+            authentication {
+                create<BasicAuthentication>("basic")
+            }
+        }
+    }
     publications {
         create<MavenPublication>("build") {
-            groupId = "moe.styx"
+            groupId = project.group.toString()
             artifactId = "styx-downloader"
-            version = "0.0.2"
+            version = project.version.toString()
 
             from(components["java"])
         }
     }
-}
-
-configurations {
-
 }
