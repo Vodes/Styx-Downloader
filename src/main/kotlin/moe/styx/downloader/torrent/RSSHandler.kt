@@ -45,6 +45,7 @@ object RSSHandler {
             Log.e("RSSHandler::start") { "Could not initiate the torrent client." }
             return
         }
+        Log.i { "Starting RSS Handler" }
         torrentClient = client
         val oneMinute = 1.toDuration(DurationUnit.MINUTES)
         launchGlobal {

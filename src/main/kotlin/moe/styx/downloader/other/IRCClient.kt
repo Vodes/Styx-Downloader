@@ -42,6 +42,7 @@ class IRCClient(private val server: String, private val channels: List<String>) 
         this.version = "1"
         runCatching {
             this.connect(server.split(":")[0], server.split(":").getOrNull(1)?.toIntOrNull() ?: 6667)
+            Log.i { "IRC Client connected." }
         }
     }
 

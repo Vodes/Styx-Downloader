@@ -45,10 +45,12 @@ object MetadataFetcher {
     fun start() = launchGlobal {
         if (Main.config.tmdbToken.isBlank())
             return@launchGlobal
+        Log.i { "Starting Metadatafetcher" }
         if (entryFile.exists()) {
-            entries =
-                (runCatching { json.decodeFromString<List<EntryMetadataUpdate>>(entryFile.readText()) }.getOrNull()
-                    ?: mutableListOf()).toMutableList()
+            val parsed = runCatching { json.decodeFromString<List<EntryMetadataUpdate>>(entryFile.readText()) }.onFailure {
+                Log.w("MetadataFetcher") { "Failed to parse queued-metadata-updates." }
+            }.getOrNull()
+            entries = (parsed ?: mutableListOf()).toMutableList()
         }
         delay(1.toDuration(DurationUnit.MINUTES))
         while (true) {
@@ -57,8 +59,8 @@ object MetadataFetcher {
                 continue
             }
             getDBClient().executeAndClose {
-                val now = currentUnixSeconds()
-                for (updateEntry in entries) {
+                for (updateEntry in entries.toList()) {
+                    val now = currentUnixSeconds()
                     if (updateEntry.lastCheck > (now - 21600))
                         continue
 
@@ -66,9 +68,9 @@ object MetadataFetcher {
                     val media = getMedia(mapOf("GUID" to entry.mediaID)).firstOrNull() ?: continue
                     runCatching {
                         updateMetadataForEntry(entry, media, this)
-                        updateEntry.lastCheck = now
+                        entries.set(entries.indexOf(updateEntry), updateEntry.copy(lastCheck = now))
                     }.onFailure { Log.e(exception = it) { "Failed to fetch metadata for '${media.name} - ${entry.entryNumber}'" } }
-                    if (updateEntry.added < now - 86400) {
+                    if (updateEntry.added < (now - 133200)) {
                         Log.i { "Removing this entry from metadata auto fetch queue." }
                         entries.remove(updateEntry)
                     }
@@ -98,5 +100,13 @@ fun updateMetadataForEntry(entry: MediaEntry, media: Media, dbClient: StyxDBClie
         synopsisDE = (epMetaDE?.overview ?: "").ifBlank { entry.synopsisDE },
     )
     dbClient.save(newEntry)
-    Log.i { "Updated entry metadata for '${media.name} - ${entry.entryNumber}'" }
+    if (listOf(
+            newEntry.nameEN?.equals(entry.nameEN),
+            newEntry.nameDE?.equals(entry.nameDE),
+            newEntry.synopsisEN?.equals(entry.synopsisEN),
+            newEntry.synopsisDE?.equals(entry.synopsisDE)
+        ).any { it == false }
+    ) {
+        Log.i { "Updated entry metadata for '${media.name} - ${entry.entryNumber}'" }
+    }
 }

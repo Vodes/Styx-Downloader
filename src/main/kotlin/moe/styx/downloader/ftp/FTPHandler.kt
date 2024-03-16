@@ -36,7 +36,7 @@ object FTPHandler {
     fun start() {
         if (!initClient())
             return
-
+        Log.i { "Starting FTP Handler" }
         val oneMinute = 1.toDuration(DurationUnit.MINUTES)
         val tempDir = File(Main.appDir, "Temp-FTP-Downloads")
         tempDir.mkdirs()
