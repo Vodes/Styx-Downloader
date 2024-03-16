@@ -76,7 +76,7 @@ class FloodClient(private var url: String, user: String, pass: String) : Torrent
                 }
             }
             if (response.status.value in 200..203) {
-                delay(1500)
+                delay(1800)
                 return@runBlocking listTorrents().find { it.hasTag(tag) }.apply {
                     if (this != null)
                         setTags(this.hash, "styx")
