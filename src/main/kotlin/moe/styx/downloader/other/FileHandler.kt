@@ -8,6 +8,7 @@ import moe.styx.common.extension.*
 import moe.styx.db.*
 import moe.styx.downloader.Main
 import moe.styx.downloader.getDBClient
+import moe.styx.downloader.other.MetadataFetcher.addEntry
 import moe.styx.downloader.parsing.AnitomyResults
 import moe.styx.downloader.parsing.parseEpisodeAndVersion
 import moe.styx.downloader.parsing.parseMetadata
@@ -176,8 +177,10 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
             }
         }
 
-        if (previous == null)
+        if (previous == null) {
             notifyDiscord(entry, media)
+            addEntry(entry)
+        }
 
         Main.updateEntryChanges()
     }

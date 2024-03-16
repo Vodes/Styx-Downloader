@@ -6,8 +6,8 @@ import io.ktor.http.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
+import moe.styx.common.http.httpClient
 import moe.styx.common.json
-import moe.styx.downloader.httpClient
 import moe.styx.downloader.torrent.Torrent
 import moe.styx.downloader.torrent.TorrentClient
 import moe.styx.downloader.utils.Log

@@ -5,11 +5,11 @@ import io.ktor.client.statement.*
 import kotlinx.coroutines.runBlocking
 import moe.styx.common.data.SourceType
 import moe.styx.common.extension.eqI
+import moe.styx.common.http.httpClient
 import moe.styx.db.getTargets
 import moe.styx.downloader.Main
 import moe.styx.downloader.episodeWanted
 import moe.styx.downloader.getDBClient
-import moe.styx.downloader.httpClient
 import moe.styx.downloader.parsing.ParseResult
 import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.RegexCollection

@@ -12,11 +12,11 @@ import moe.styx.common.data.MediaEntry
 import moe.styx.common.extension.eqI
 import moe.styx.common.extension.padString
 import moe.styx.common.extension.toBoolean
+import moe.styx.common.http.httpClient
 import moe.styx.common.util.launchGlobal
 import moe.styx.db.*
 import moe.styx.downloader.Main
 import moe.styx.downloader.getDBClient
-import moe.styx.downloader.httpClient
 import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.getTargetTime
 import moe.styx.downloader.utils.getURL

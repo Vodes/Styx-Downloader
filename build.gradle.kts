@@ -7,8 +7,6 @@ plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
-val ktorVersion = "2.3.9"
-
 group = "moe.styx"
 version = "0.0.3"
 
@@ -19,7 +17,7 @@ repositories {
 }
 
 dependencies {
-    implementation("moe.styx:styx-db:0.0.7")
+    implementation("moe.styx:styx-db:0.0.8")
     implementation("com.github.Vodes:PircBot:873bc4aa78")
 
     implementation("net.peanuuutz.tomlkt:tomlkt:0.3.7")
@@ -38,12 +36,6 @@ dependencies {
 
     implementation("com.github.btmxh:anitomyJ:f6e9cea8f8")
     implementation("commons-net:commons-net:3.10.0")
-
-    implementation("io.ktor:ktor-client-core:$ktorVersion")
-    implementation("io.ktor:ktor-client-java:$ktorVersion")
-    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
-    implementation("io.ktor:ktor-client-encoding:$ktorVersion")
 
     testImplementation(kotlin("test"))
 }

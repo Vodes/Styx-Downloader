@@ -1,27 +1,22 @@
 package moe.styx.downloader
 
-import io.ktor.client.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.compression.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.plugins.cookies.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import moe.styx.common.data.Changes
+import moe.styx.common.http.getHttpClient
 import moe.styx.common.json
 import moe.styx.common.util.launchGlobal
 import moe.styx.downloader.ftp.FTPHandler
 import moe.styx.downloader.other.IRCClient
+import moe.styx.downloader.other.MetadataFetcher
 import moe.styx.downloader.other.startBot
 import moe.styx.downloader.torrent.RSSHandler
 import net.peanuuutz.tomlkt.Toml
 import java.io.File
 import kotlin.system.exitProcess
-
-lateinit var httpClient: HttpClient
 
 object Main {
     lateinit var appDir: File
@@ -57,16 +52,12 @@ fun loadConfig(args: Array<String> = emptyArray()) {
         exitProcess(1)
     }
     Main.config = Main.toml.decodeFromString(Main.configFile.readText())
-    httpClient = HttpClient {
-        install(ContentNegotiation) { json }
-        install(ContentEncoding)
-        install(HttpCookies)
-        install(UserAgent) { agent = Main.config.httpUserAgent }
-    }
+    getHttpClient(Main.config.httpUserAgent)
 }
 
 fun main(args: Array<String>) {
     loadConfig(args)
+    MetadataFetcher.start()
     startBot()
     FTPHandler.start()
     if (Main.config.torrentConfig.defaultSeedDir.isNotBlank() && Main.config.torrentConfig.defaultNonSeedDir.isNotBlank())

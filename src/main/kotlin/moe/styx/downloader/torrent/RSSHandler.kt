@@ -14,13 +14,13 @@ import moe.styx.common.data.DownloadableOption
 import moe.styx.common.data.DownloaderTarget
 import moe.styx.common.extension.anyEquals
 import moe.styx.common.extension.eqI
+import moe.styx.common.http.httpClient
 import moe.styx.common.util.launchGlobal
 import moe.styx.common.util.launchThreaded
 import moe.styx.db.getTargets
 import moe.styx.downloader.Main
 import moe.styx.downloader.episodeWanted
 import moe.styx.downloader.getDBClient
-import moe.styx.downloader.httpClient
 import moe.styx.downloader.other.handleFile
 import moe.styx.downloader.parsing.ParseDenyReason
 import moe.styx.downloader.parsing.ParseResult
