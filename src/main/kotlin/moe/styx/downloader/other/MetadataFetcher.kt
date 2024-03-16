@@ -108,5 +108,6 @@ fun updateMetadataForEntry(entry: MediaEntry, media: Media, dbClient: StyxDBClie
         ).any { it == false }
     ) {
         Log.i { "Updated entry metadata for '${media.name} - ${entry.entryNumber}'" }
+        runCatching { Main.updateEntryChanges() }
     }
 }
