@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-    implementation("moe.styx:styx-db:0.0.6")
+    implementation("moe.styx:styx-db:0.0.7")
     implementation("com.github.Vodes:PircBot:873bc4aa78")
 
     implementation("net.peanuuutz.tomlkt:tomlkt:0.3.7")

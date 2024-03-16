@@ -14,6 +14,8 @@ data class Config(
     val ignoreSpecialsAndPoint5: Boolean = true,
     val defaultFTPConnectionString: String = "",
     val httpUserAgent: String = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+    val imageBaseUrl: String = "",
+    val siteBaseUrl: String = "",
     @SerialName("DatabaseConfig")
     val dbConfig: DbConfig = DbConfig(),
     @SerialName("TorrentConfig")

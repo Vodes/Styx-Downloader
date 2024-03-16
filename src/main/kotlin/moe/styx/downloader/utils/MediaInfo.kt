@@ -61,7 +61,7 @@ data class Track(
 fun File.getMediaInfo(): MediaInfo? {
     val mediainfoExecutable = getExecutableFromPath("mediainfo") ?: return null
 
-    val process: Process = if (isWindows()) {
+    val process: Process = if (isWindows) {
         val command = "\"${mediainfoExecutable.absolutePath}\" --Output=JSON \"${this.absolutePath}\""
         ProcessBuilder(command)
             .redirectOutput(ProcessBuilder.Redirect.PIPE)

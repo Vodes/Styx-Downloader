@@ -2,6 +2,7 @@ package moe.styx.downloader.utils
 
 import moe.styx.common.data.*
 import moe.styx.common.extension.toBoolean
+import moe.styx.downloader.Main
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -68,11 +69,11 @@ fun ProcessingOptions.needsMuxtools(): Boolean {
 
 fun Image.getURL(): String {
     return if (hasWEBP?.toBoolean() == true) {
-        "https://i.styx.moe/$GUID.webp"
+        "${Main.config.imageBaseUrl}/$GUID.webp"
     } else if (hasJPG?.toBoolean() == true) {
-        "https://i.styx.moe/$GUID.jpg"
+        "${Main.config.imageBaseUrl}/$GUID.jpg"
     } else if (hasPNG?.toBoolean() == true) {
-        "https://i.styx.moe/$GUID.png"
+        "${Main.config.imageBaseUrl}/$GUID.png"
     } else {
         return externalURL as String
     }

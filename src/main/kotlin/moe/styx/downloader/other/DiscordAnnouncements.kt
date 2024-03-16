@@ -107,7 +107,7 @@ fun notifyDiscord(entry: MediaEntry, media: Media) {
             .filterValues { it != null }
 
         val embed = EmbedBuilder()
-            .setAuthor("Styx", "https://beta.styx.moe", "https://i.styx.moe/website/icon.png")
+            .setAuthor("Styx", Main.config.siteBaseUrl, "${Main.config.imageBaseUrl}/website/icon.png")
             .setThumbnail(thumb.getURL())
             .setTitle("New episode")
             .setDescription("${media.name} - ${entry.entryNumber}")

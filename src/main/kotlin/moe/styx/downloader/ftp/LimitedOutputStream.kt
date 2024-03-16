@@ -2,9 +2,9 @@ package moe.styx.downloader.ftp
 
 import com.google.common.util.concurrent.RateLimiter
 import kotlinx.coroutines.delay
+import moe.styx.common.extension.readableSize
 import moe.styx.common.util.launchThreaded
 import moe.styx.downloader.utils.Log
-import moe.styx.downloader.utils.readableSize
 import java.io.File
 import java.io.FileOutputStream
 import kotlin.time.DurationUnit
@@ -17,7 +17,7 @@ class LimitedOutputStream(private val file: File, private val targetSize: Long, 
     private var prevSize: Long = 0
     private var currentSize: Long = 0
     private val rateLimiter = RateLimiter.create(rateLimit)
-
+    
     override fun close() {
         done = true
         super.close()
