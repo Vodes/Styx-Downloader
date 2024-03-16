@@ -10,7 +10,7 @@ plugins {
 val ktorVersion = "2.3.9"
 
 group = "moe.styx"
-version = "0.0.2"
+version = "0.0.3"
 
 repositories {
     mavenCentral()
@@ -23,18 +23,18 @@ dependencies {
     implementation("com.github.Vodes:PircBot:873bc4aa78")
 
     implementation("net.peanuuutz.tomlkt:tomlkt:0.3.7")
-    implementation("com.github.ajalt.mordant:mordant:2.2.0")
+    implementation("com.github.ajalt.mordant:mordant:2.4.0")
     implementation("de.androidpit:color-thief:1.1.2")
-    implementation("com.google.guava:guava:33.0.0-jre")
+    implementation("com.google.guava:guava:33.1.0-jre")
     implementation("com.apptasticsoftware:rssreader:3.6.0")
-    implementation("com.mysql:mysql-connector-j:8.2.0")
+    implementation("com.mysql:mysql-connector-j:8.3.0")
     implementation("org.apache.commons:commons-collections4:4.4")
     implementation("com.twelvemonkeys.imageio:imageio-core:3.10.1")
     runtimeOnly("com.twelvemonkeys.imageio:imageio-webp:3.10.1")
 
     implementation("org.javacord:javacord:3.8.0")
-    implementation("org.slf4j:slf4j-simple:2.0.9")
-    runtimeOnly("org.apache.logging.log4j:log4j-to-slf4j:2.17.0")
+    implementation("org.slf4j:slf4j-simple:2.0.12")
+    runtimeOnly("org.apache.logging.log4j:log4j-to-slf4j:2.23.1")
 
     implementation("com.github.btmxh:anitomyJ:f6e9cea8f8")
     implementation("commons-net:commons-net:3.10.0")
