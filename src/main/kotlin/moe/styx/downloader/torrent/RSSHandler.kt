@@ -37,6 +37,7 @@ import kotlin.time.toDuration
 object RSSHandler {
     private lateinit var torrentClient: TorrentClient
     private val reader = RssReader()
+    private val alreadyAdded = mutableListOf<String>()
 
     fun start() {
         val client = Main.config.torrentConfig.createClient()
@@ -55,16 +56,20 @@ object RSSHandler {
                     val results = runCatching { checkFeed(feedURL, options, targets) }.getOrNull() ?: emptyList()
                     for ((item, parseResult) in results.filter { it.second is ParseResult.OK }) {
                         val result = parseResult as ParseResult.OK
+                        val torrentUrl = item.getTorrentURL()
+                        if (alreadyAdded.anyEquals(torrentUrl))
+                            continue
                         Log.d("RSSHandler for Feed: $feedURL") { "Downloading: ${item.title}" }
                         val torrent = torrentClient.addTorrentByURL(
-                            item.getTorrentURL(),
+                            torrentUrl,
                             if (result.option.keepSeeding) Main.config.torrentConfig.defaultSeedDir else Main.config.torrentConfig.defaultNonSeedDir
                         )
                         if (torrent == null) {
-                            Log.e("RSSHandler for Feed: $feedURL") { "Could not add torrent with URL: ${item.getTorrentURL()}" }
+                            Log.e("RSSHandler for Feed: $feedURL") { "Could not add torrent with URL: $torrentUrl" }
                             delay(oneMinute)
                             continue
                         }
+                        alreadyAdded.add(torrentUrl)
                         if (!result.option.keepSeeding)
                             waitAndDelete(torrent)
                         delay(8000)
