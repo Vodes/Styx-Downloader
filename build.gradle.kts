@@ -1,13 +1,13 @@
 plugins {
-    kotlin("jvm") version "1.9.22"
-    kotlin("plugin.serialization") version "1.9.22"
+    kotlin("jvm") version "1.9.23"
+    kotlin("plugin.serialization") version "1.9.23"
     application
     `java-library`
     `maven-publish`
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
-val ktorVersion = "2.3.8"
+val ktorVersion = "2.3.9"
 
 group = "moe.styx"
 version = "0.0.2"
@@ -19,11 +19,10 @@ repositories {
 }
 
 dependencies {
-    implementation("moe.styx:styx-db:0.0.5")
+    implementation("moe.styx:styx-db:0.0.6")
     implementation("com.github.Vodes:PircBot:873bc4aa78")
 
     implementation("net.peanuuutz.tomlkt:tomlkt:0.3.7")
-    implementation("org.javacord:javacord:3.8.0")
     implementation("com.github.ajalt.mordant:mordant:2.2.0")
     implementation("de.androidpit:color-thief:1.1.2")
     implementation("com.google.guava:guava:33.0.0-jre")
@@ -33,8 +32,11 @@ dependencies {
     implementation("com.twelvemonkeys.imageio:imageio-core:3.10.1")
     runtimeOnly("com.twelvemonkeys.imageio:imageio-webp:3.10.1")
 
-    implementation("com.github.btmxh:anitomyJ:f6e9cea8f8")
+    implementation("org.javacord:javacord:3.8.0")
     implementation("org.slf4j:slf4j-simple:2.0.9")
+    runtimeOnly("org.apache.logging.log4j:log4j-to-slf4j:2.17.0")
+
+    implementation("com.github.btmxh:anitomyJ:f6e9cea8f8")
     implementation("commons-net:commons-net:3.10.0")
 
     implementation("io.ktor:ktor-client-core:$ktorVersion")

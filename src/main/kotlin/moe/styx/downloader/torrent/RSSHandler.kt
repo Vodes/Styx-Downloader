@@ -14,6 +14,7 @@ import moe.styx.common.data.DownloadableOption
 import moe.styx.common.data.DownloaderTarget
 import moe.styx.common.extension.anyEquals
 import moe.styx.common.extension.eqI
+import moe.styx.common.util.launchGlobal
 import moe.styx.common.util.launchThreaded
 import moe.styx.db.getTargets
 import moe.styx.downloader.Main
@@ -23,7 +24,10 @@ import moe.styx.downloader.httpClient
 import moe.styx.downloader.other.handleFile
 import moe.styx.downloader.parsing.ParseDenyReason
 import moe.styx.downloader.parsing.ParseResult
-import moe.styx.downloader.utils.*
+import moe.styx.downloader.utils.Log
+import moe.styx.downloader.utils.RegexCollection
+import moe.styx.downloader.utils.getRSSOptions
+import moe.styx.downloader.utils.parentIn
 import java.io.File
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -42,14 +46,14 @@ object RSSHandler {
         }
         torrentClient = client
         val oneMinute = 1.toDuration(DurationUnit.MINUTES)
-        launchThreaded {
+        launchGlobal {
             delay(30.toDuration(DurationUnit.SECONDS))
             while (true) {
                 val targets = getDBClient().executeGet { getTargets() }
                 val rssOptions = targets.getRSSOptions()
                 for ((feedURL, options) in rssOptions.iterator()) {
-                    val results = checkFeed(feedURL, options, targets).filter { it.second is ParseResult.OK }
-                    for ((item, parseResult) in results) {
+                    val results = runCatching { checkFeed(feedURL, options, targets) }.getOrNull() ?: emptyList()
+                    for ((item, parseResult) in results.filter { it.second is ParseResult.OK }) {
                         val result = parseResult as ParseResult.OK
                         Log.d("RSSHandler for Feed: $feedURL") { "Downloading: ${item.title}" }
                         val torrent = torrentClient.addTorrentByURL(
@@ -63,6 +67,7 @@ object RSSHandler {
                         }
                         if (!result.option.keepSeeding)
                             waitAndDelete(torrent)
+                        delay(8000)
                     }
                     if (feedURL.contains("animetosho"))
                         delay(10000)

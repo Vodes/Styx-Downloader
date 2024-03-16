@@ -5,7 +5,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.toJavaInstant
 import moe.styx.common.data.DownloadableOption
 import moe.styx.common.data.DownloaderTarget
-import moe.styx.common.util.launchThreaded
+import moe.styx.common.util.launchGlobal
 import moe.styx.db.getTargets
 import moe.styx.downloader.Main
 import moe.styx.downloader.episodeWanted
@@ -40,7 +40,7 @@ object FTPHandler {
         val oneMinute = 1.toDuration(DurationUnit.MINUTES)
         val tempDir = File(Main.appDir, "Temp-FTP-Downloads")
         tempDir.mkdirs()
-        launchThreaded {
+        launchGlobal {
             while (true) {
                 val targets = getDBClient().executeGet { getTargets() }
                 val ftpOptions = targets.getFTPOptions()
