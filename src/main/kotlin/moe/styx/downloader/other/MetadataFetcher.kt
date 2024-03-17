@@ -71,7 +71,7 @@ object MetadataFetcher {
                         entries.set(entries.indexOf(updateEntry), updateEntry.copy(lastCheck = now))
                     }.onFailure { Log.e(exception = it) { "Failed to fetch metadata for '${media.name} - ${entry.entryNumber}'" } }
                     if (updateEntry.added < (now - 133200)) {
-                        Log.i { "Removing this entry from metadata auto fetch queue." }
+                        Log.i { "Removing '${media.name} - ${entry.entryNumber}' from metadata auto fetch queue." }
                         entries.remove(updateEntry)
                     }
                     delay(1.toDuration(DurationUnit.MINUTES))
