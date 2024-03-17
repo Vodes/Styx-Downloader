@@ -88,6 +88,7 @@ fun notifyDiscord(entry: MediaEntry, media: Media) {
     val dbClient = getDBClient()
     val thumb = dbClient.getImages(mapOf("GUID" to media.thumbID!!)).firstOrNull() ?: return
     val users = dbClient.getUsers()
+    checkAndRemoveSchedule(dbClient, media, entry)
 
     runCatching {
         val server = bot.getServerById(Main.config.discordBot.announceServer).getOrNull() ?: return@runCatching
@@ -145,4 +146,13 @@ fun notifyDiscord(entry: MediaEntry, media: Media) {
     }.also {
         dbClient.closeConnection()
     }
+}
+
+private fun checkAndRemoveSchedule(dbClient: StyxDBClient, media: Media, entry: MediaEntry) {
+    val schedule = dbClient.getSchedules(mapOf("mediaID" to media.GUID)).firstOrNull() ?: return
+    if (schedule.finalEpisodeCount <= 0)
+        return
+    val episode = entry.entryNumber.toDoubleOrNull() ?: return
+    if (episode.roundToInt() >= schedule.finalEpisodeCount)
+        dbClient.delete(schedule)
 }
