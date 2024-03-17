@@ -27,7 +27,7 @@ fun parseMetadata(toParse: String): AnitomyResults {
     }
     // Other misc fixes that kinda fuck with anitomy
     // Single letter parts in scene naming, for example Invincible.2021.S02E01.A.LESSON.FOR.YOUR.NEXT.LIFE.1080p.AMZN.WEB-DL.DDP5.1.H.264-FLUX.mkv
-    toParse = toParse.replaceFirst(RegexCollection.singleLetterWithDot, "")
+    toParse = toParse.replaceFirst(RegexCollection.singleLetterWithDot, " ")
     return AnitomyJ.parse(toParse)
 }
 
