@@ -62,10 +62,10 @@ fun startBot() {
                         val episode = if (latestEntryNum != null) {
                             val next = latestEntryNum.roundToInt() + 1
                             val nextFormatted = next.padString(2)
-                            " - $nextFormatted${if (schedule.finalEpisodeCount != 0 && next >= schedule.finalEpisodeCount) "(Final EP)" else ""}"
+                            " - $nextFormatted${if (schedule.finalEpisodeCount != 0 && next >= schedule.finalEpisodeCount) " (Final EP)" else ""}"
                         } else ""
                         embed.addField(
-                            "${if (isToday) "> " else ""}${media!!.name}$episode",
+                            "${if (isToday) "> " else ""}${media.name}$episode",
                             "<t:$unix:R> (<t:$unix:d> <t:$unix:t>)${if (schedule.isEstimated.toBoolean()) " (Estimated)" else ""}"
                         )
                     }
