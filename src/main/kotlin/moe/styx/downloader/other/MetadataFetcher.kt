@@ -10,6 +10,7 @@ import moe.styx.common.data.tmdb.decodeMapping
 import moe.styx.common.data.tmdb.getMappingForEpisode
 import moe.styx.common.data.tmdb.orEmpty
 import moe.styx.common.extension.currentUnixSeconds
+import moe.styx.common.extension.eqI
 import moe.styx.common.json
 import moe.styx.common.util.launchGlobal
 import moe.styx.db.StyxDBClient
@@ -59,25 +60,29 @@ object MetadataFetcher {
                 continue
             }
             getDBClient().executeAndClose {
-                for (updateEntry in entries.toList()) {
+                entries.toList().forEachIndexed { index, updateEntry ->
                     val now = currentUnixSeconds()
-                    if (updateEntry.lastCheck > (now - 21600))
-                        continue
 
-                    val entry = getEntries(mapOf("GUID" to updateEntry.entryID)).firstOrNull() ?: continue
-                    val media = getMedia(mapOf("GUID" to entry.mediaID)).firstOrNull() ?: continue
-                    runCatching {
-                        updateMetadataForEntry(entry, media, this)
-                        entries.set(entries.indexOf(updateEntry), updateEntry.copy(lastCheck = now))
-                    }.onFailure { Log.e(exception = it) { "Failed to fetch metadata for '${media.name} - ${entry.entryNumber}'" } }
+                    val entry = getEntries(mapOf("GUID" to updateEntry.entryID)).firstOrNull() ?: return@forEachIndexed
+                    val media = getMedia(mapOf("GUID" to entry.mediaID)).firstOrNull() ?: return@forEachIndexed
+
                     if (updateEntry.added < (now - 133200)) {
                         Log.i { "Removing '${media.name} - ${entry.entryNumber}' from metadata auto fetch queue." }
-                        entries.remove(updateEntry)
+                        entries.removeIf { it.entryID eqI updateEntry.entryID }
+                        return@forEachIndexed
                     }
+                    
+                    if (updateEntry.lastCheck > (now - 21600))
+                        return@forEachIndexed
+
+                    runCatching {
+                        updateMetadataForEntry(entry, media, this)
+                        entries.set(index, updateEntry.copy(lastCheck = now))
+                    }.onFailure { Log.e(exception = it) { "Failed to fetch metadata for '${media.name} - ${entry.entryNumber}'" } }
                     delay(1.toDuration(DurationUnit.MINUTES))
                 }
-                save()
             }
+            save()
             delay(30.toDuration(DurationUnit.MINUTES))
         }
     }

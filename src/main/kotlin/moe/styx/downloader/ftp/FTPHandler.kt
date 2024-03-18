@@ -56,7 +56,9 @@ object FTPHandler {
                             Log.e("FTPHandler::start") { "Could not initialize custom FTPClient with connectionstring: ${option.ftpConnectionString}" }
                         }.getOrNull() ?: continue
                     }
-                    val results = checkDir(option.sourcePath!!, option, targets, client).filter { it.second is ParseResult.OK }
+                    val results =
+                        runCatching { checkDir(option.sourcePath!!, option, targets, client).filter { it.second is ParseResult.OK } }.getOrNull()
+                            ?: emptyList()
                     for ((filePair, parseResult) in results) {
                         val result = parseResult as ParseResult.OK
                         Log.d("FTPHandler in dir: ${option.sourcePath}") { "Downloading: ${File(filePair.first).name}" }
