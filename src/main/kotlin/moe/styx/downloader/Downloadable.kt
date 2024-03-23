@@ -2,6 +2,7 @@ package moe.styx.downloader
 
 import moe.styx.common.data.DownloadableOption
 import moe.styx.common.data.DownloaderTarget
+import moe.styx.common.extension.equalsAny
 import moe.styx.db.StyxDBClient
 import moe.styx.db.getEntries
 import moe.styx.downloader.parsing.ParseDenyReason
@@ -27,8 +28,13 @@ fun DownloadableOption.episodeWanted(toMatch: String, parent: DownloaderTarget, 
     }
     // Ignore stuff like "One Piece - Egghead SP1" or "One Piece E1078.5"
     if (Main.config.ignoreSpecialsAndPoint5) {
-        if (RegexCollection.specialEpisodeRegex.find(toMatch) != null)
-            return ParseResult.DENIED(ParseDenyReason.IsSpecialOrFiller)
+        val matches = RegexCollection.specialEpisodeRegex.findAll(toMatch)
+        for (match in matches) {
+            val group = match.groups["num"]?.value ?: continue
+            if (!group.trim().equalsAny("2.0", "5.1", "7.1")) {
+                return ParseResult.DENIED(ParseDenyReason.IsSpecialOrFiller)
+            }
+        }
     }
 
     val (episode, version) = parseEpisodeAndVersion(toMatch, episodeOffset)
