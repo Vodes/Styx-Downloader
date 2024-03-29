@@ -140,7 +140,11 @@ object RSSHandler {
                         results.add(item to ParseResult.DENIED(ParseDenyReason.PostIsTooOld))
                         continue
                     }
-                    val parseResult = option.episodeWanted(item.title, parent, true)
+                    var titleToCheck = item.title
+                    if (titleToCheck.filter { it == '/' }.length >= 3) {
+                        titleToCheck = titleToCheck.split("/").maxBy { it.length }
+                    }
+                    val parseResult = option.episodeWanted(titleToCheck, parent, true)
                     results.add(item to parseResult)
                 }
             }
