@@ -127,11 +127,12 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
             file.name
         )
 
+    val result = dbClient.transaction { MediaEntryTable.upsertItem(entry).insertedCount.toBoolean() }
+    if (!result) {
+        Log.e("FileHandler for file: ${output.name}") { "Could not add entry to database!" }
+        return false
+    }
     dbClient.transaction {
-        if (!MediaEntryTable.upsertItem(entry).insertedCount.toBoolean()) {
-            Log.e("FileHandler for file: ${output.name}") { "Could not add entry to database!" }
-            return@transaction
-        }
         val mediaInfoResult = output.getMediaInfo()
         if (mediaInfoResult != null) {
             MediaInfoTable.upsertItem(
