@@ -3,24 +3,15 @@ package moe.styx.downloader
 import moe.styx.common.data.DownloadableOption
 import moe.styx.common.data.DownloaderTarget
 import moe.styx.common.extension.equalsAny
-import moe.styx.db.StyxDBClient
-import moe.styx.db.getEntries
+import moe.styx.db.tables.MediaEntryTable
 import moe.styx.downloader.parsing.ParseDenyReason
 import moe.styx.downloader.parsing.ParseResult
 import moe.styx.downloader.parsing.parseEpisodeAndVersion
 import moe.styx.downloader.utils.RegexCollection
+import org.jetbrains.exposed.sql.selectAll
 import java.io.File
 import kotlin.math.abs
 
-fun getDBClient(database: String = "Styx2"): StyxDBClient {
-    return StyxDBClient(
-        "com.mysql.cj.jdbc.Driver",
-        "jdbc:mysql://${Main.config.dbConfig.ip}/$database?" +
-                "useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Europe/Berlin",
-        Main.config.dbConfig.user,
-        Main.config.dbConfig.pass
-    )
-}
 
 fun DownloadableOption.episodeWanted(toMatch: String, parent: DownloaderTarget, rss: Boolean = false): ParseResult {
     if (!this.matches(toMatch, rss)) {
@@ -41,7 +32,7 @@ fun DownloadableOption.episodeWanted(toMatch: String, parent: DownloaderTarget, 
         ?: return ParseResult.FAILED(ParseDenyReason.InvalidEpisodeNumber)
 
     // Check if we already have the episode in the database
-    val dbEpisode = getDBClient().executeGet { getEntries(mapOf("mediaID" to parent.mediaID)) }
+    val dbEpisode = dbClient.transaction { MediaEntryTable.query { selectAll().where { mediaID eq parent.mediaID }.toList() } }
         .find { it.entryNumber.toDoubleOrNull() == episode.toDoubleOrNull() }
 
     // Check what "option" the episode in the database corresponds to (if same and not a different version return false)

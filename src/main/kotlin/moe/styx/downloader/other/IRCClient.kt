@@ -6,13 +6,14 @@ import kotlinx.coroutines.runBlocking
 import moe.styx.common.data.SourceType
 import moe.styx.common.extension.eqI
 import moe.styx.common.http.httpClient
-import moe.styx.db.getTargets
+import moe.styx.db.tables.DownloaderTargetsTable
 import moe.styx.downloader.Main
+import moe.styx.downloader.dbClient
 import moe.styx.downloader.episodeWanted
-import moe.styx.downloader.getDBClient
 import moe.styx.downloader.parsing.ParseResult
 import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.RegexCollection
+import org.jetbrains.exposed.sql.selectAll
 import org.jibble.pircbot.DccFileTransfer
 import org.jibble.pircbot.PircBot
 import java.io.File
@@ -64,7 +65,7 @@ class IRCClient(private val server: String, private val channels: List<String>) 
             transfer.close()
             return
         }
-        val targets = getDBClient().executeGet { getTargets() }
+        val targets = dbClient.transaction { DownloaderTargetsTable.query { selectAll().toList() } }
         val parseResult = targets.episodeWanted(transfer.file.name)
         if (parseResult !is ParseResult.OK || parseResult.option.source != SourceType.XDCC) {
             Log.d(logSource) { "Blocked invalid incoming transfer from user '${transfer.nick}'" }
@@ -88,7 +89,7 @@ class IRCClient(private val server: String, private val channels: List<String>) 
                 transfer.file.delete()
             return
         }
-        val targets = getDBClient().executeGet { getTargets() }
+        val targets = dbClient.transaction { DownloaderTargetsTable.query { selectAll().toList() } }
         val parseResult = targets.episodeWanted(transfer.file.name)
         if (parseResult !is ParseResult.OK || parseResult.option.source != SourceType.XDCC) {
             Log.d(logSource) { "Somehow ended up with unwanted file: ${transfer.file.name}" }
@@ -117,7 +118,7 @@ class IRCClient(private val server: String, private val channels: List<String>) 
 
     private fun handleMessage(message: String, sender: String) {
         val announceMatch = RegexCollection.xdccAnnounceRegex.find(message) ?: return
-        val targets = getDBClient().executeGet { getTargets() }
+        val targets = dbClient.transaction { DownloaderTargetsTable.query { selectAll().toList() } }
         val parseResult = targets.episodeWanted(message)
         if (parseResult !is ParseResult.OK || parseResult.option.source != SourceType.XDCC) {
             return

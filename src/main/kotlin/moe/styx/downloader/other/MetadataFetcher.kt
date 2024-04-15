@@ -13,15 +13,15 @@ import moe.styx.common.extension.currentUnixSeconds
 import moe.styx.common.extension.eqI
 import moe.styx.common.json
 import moe.styx.common.util.launchGlobal
-import moe.styx.db.StyxDBClient
-import moe.styx.db.getEntries
-import moe.styx.db.getMedia
-import moe.styx.db.save
+import moe.styx.db.tables.ChangesTable
+import moe.styx.db.tables.MediaEntryTable
+import moe.styx.db.tables.MediaTable
 import moe.styx.downloader.Main
+import moe.styx.downloader.dbClient
 import moe.styx.downloader.getAppDir
-import moe.styx.downloader.getDBClient
 import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.getRemoteEpisodes
+import org.jetbrains.exposed.sql.selectAll
 import java.io.File
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -59,28 +59,29 @@ object MetadataFetcher {
                 delay(5000)
                 continue
             }
-            getDBClient().executeAndClose {
-                entries.toList().forEachIndexed { index, updateEntry ->
-                    val now = currentUnixSeconds()
+            entries.toList().forEachIndexed { index, updateEntry ->
+                val now = currentUnixSeconds()
 
-                    val entry = getEntries(mapOf("GUID" to updateEntry.entryID)).firstOrNull() ?: return@forEachIndexed
-                    val media = getMedia(mapOf("GUID" to entry.mediaID)).firstOrNull() ?: return@forEachIndexed
+                val entry =
+                    dbClient.transaction { MediaEntryTable.query { selectAll().where { GUID eq updateEntry.entryID }.toList() }.firstOrNull() }
+                        ?: return@forEachIndexed
+                val media = dbClient.transaction { MediaTable.query { selectAll().where { GUID eq entry.mediaID }.toList() }.firstOrNull() }
+                    ?: return@forEachIndexed
 
-                    if (updateEntry.added < (now - 133200)) {
-                        Log.i { "Removing '${media.name} - ${entry.entryNumber}' from metadata auto fetch queue." }
-                        entries.removeIf { it.entryID eqI updateEntry.entryID }
-                        return@forEachIndexed
-                    }
-                    
-                    if (updateEntry.lastCheck > (now - 21600))
-                        return@forEachIndexed
-
-                    runCatching {
-                        updateMetadataForEntry(entry, media, this)
-                        entries.set(index, updateEntry.copy(lastCheck = now))
-                    }.onFailure { Log.e(exception = it) { "Failed to fetch metadata for '${media.name} - ${entry.entryNumber}'" } }
-                    delay(1.toDuration(DurationUnit.MINUTES))
+                if (updateEntry.added < (now - 133200)) {
+                    Log.i { "Removing '${media.name} - ${entry.entryNumber}' from metadata auto fetch queue." }
+                    entries.removeIf { it.entryID eqI updateEntry.entryID }
+                    return@forEachIndexed
                 }
+
+                if (updateEntry.lastCheck > (now - 21600))
+                    return@forEachIndexed
+
+                runCatching {
+                    updateMetadataForEntry(entry, media)
+                    entries.set(index, updateEntry.copy(lastCheck = now))
+                }.onFailure { Log.e(exception = it) { "Failed to fetch metadata for '${media.name} - ${entry.entryNumber}'" } }
+                delay(1.toDuration(DurationUnit.MINUTES))
             }
             save()
             delay(30.toDuration(DurationUnit.MINUTES))
@@ -88,7 +89,7 @@ object MetadataFetcher {
     }
 }
 
-fun updateMetadataForEntry(entry: MediaEntry, media: Media, dbClient: StyxDBClient) {
+fun updateMetadataForEntry(entry: MediaEntry, media: Media) {
     val tmdbMapping = media.decodeMapping().orEmpty().getMappingForEpisode(entry.entryNumber)?.let { it as TMDBMapping } ?: return
     val (metaEN, metaDE) = tmdbMapping.getRemoteEpisodes { Log.e("MetadataFetcher") { it } }
     val number = entry.entryNumber.toDouble() + tmdbMapping.offset
@@ -104,7 +105,7 @@ fun updateMetadataForEntry(entry: MediaEntry, media: Media, dbClient: StyxDBClie
         synopsisEN = epMetaEN.overview.ifBlank { entry.synopsisEN },
         synopsisDE = (epMetaDE?.overview ?: "").ifBlank { entry.synopsisDE },
     )
-    dbClient.save(newEntry)
+    dbClient.transaction { MediaEntryTable.upsertItem(newEntry) }
     if (listOf(
             newEntry.nameEN?.equals(entry.nameEN),
             newEntry.nameDE?.equals(entry.nameDE),
@@ -113,6 +114,6 @@ fun updateMetadataForEntry(entry: MediaEntry, media: Media, dbClient: StyxDBClie
         ).any { it == false }
     ) {
         Log.i { "Updated entry metadata for '${media.name} - ${entry.entryNumber}'" }
-        runCatching { Main.updateEntryChanges() }
+        runCatching { dbClient.transaction { ChangesTable.setToNow(false, true) } }
     }
 }

@@ -6,16 +6,17 @@ import kotlinx.datetime.toJavaInstant
 import moe.styx.common.data.DownloadableOption
 import moe.styx.common.data.DownloaderTarget
 import moe.styx.common.util.launchGlobal
-import moe.styx.db.getTargets
+import moe.styx.db.tables.DownloaderTargetsTable
 import moe.styx.downloader.Main
+import moe.styx.downloader.dbClient
 import moe.styx.downloader.episodeWanted
-import moe.styx.downloader.getDBClient
 import moe.styx.downloader.other.handleFile
 import moe.styx.downloader.parsing.ParseDenyReason
 import moe.styx.downloader.parsing.ParseResult
 import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.getFTPOptions
 import moe.styx.downloader.utils.parentIn
+import org.jetbrains.exposed.sql.selectAll
 import java.io.File
 import java.time.temporal.ChronoUnit
 import kotlin.time.DurationUnit
@@ -42,7 +43,7 @@ object FTPHandler {
         tempDir.mkdirs()
         launchGlobal {
             while (true) {
-                val targets = getDBClient().executeGet { getTargets() }
+                val targets = dbClient.transaction { DownloaderTargetsTable.query { selectAll().toList() } }
                 val ftpOptions = targets.getFTPOptions()
                 for (option in ftpOptions) {
                     var downloadedSomething = false

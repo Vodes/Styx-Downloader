@@ -14,15 +14,18 @@ import moe.styx.common.extension.padString
 import moe.styx.common.extension.toBoolean
 import moe.styx.common.http.httpClient
 import moe.styx.common.util.launchGlobal
-import moe.styx.db.*
+import moe.styx.db.tables.*
 import moe.styx.downloader.Main
-import moe.styx.downloader.getDBClient
+import moe.styx.downloader.dbClient
 import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.getTargetTime
 import moe.styx.downloader.utils.getURL
 import org.javacord.api.DiscordApi
 import org.javacord.api.DiscordApiBuilder
 import org.javacord.api.entity.message.embed.EmbedBuilder
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.selectAll
 import java.awt.Color
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -42,9 +45,9 @@ fun startBot() {
 
     launchGlobal {
         while (true) {
-            val dbClient = getDBClient()
-            val mediaList = dbClient.getMedia()
-            val scheduleDays = dbClient.getSchedules().sortedBy { it.getTargetTime().dayOfWeek }.groupBy { it.getTargetTime().dayOfWeek }
+            val mediaList = dbClient.transaction { MediaTable.query { selectAll().toList() } }
+            val scheduleDays = dbClient.transaction { MediaScheduleTable.query { selectAll().toList() } }.sortedBy { it.getTargetTime().dayOfWeek }
+                .groupBy { it.getTargetTime().dayOfWeek }
             runCatching {
                 val embed = EmbedBuilder().setTitle("Anime-Chart")
                 scheduleDays.forEach { (_, schedules) ->
@@ -52,7 +55,8 @@ fun startBot() {
                         val media = mediaList.find { it.GUID eqI schedule.mediaID }
                         if (media == null)
                             continue
-                        val latestEntry = dbClient.getEntries(mapOf("mediaID" to media.GUID)).maxBy { it.entryNumber.toDoubleOrNull() ?: 0.0 }
+                        val latestEntry = dbClient.transaction { MediaEntryTable.query { selectAll().where { mediaID eq media.GUID }.toList() } }
+                            .maxBy { it.entryNumber.toDoubleOrNull() ?: 0.0 }
                         val latestEntryNum = latestEntry.entryNumber.toDoubleOrNull()
                         val target = schedule.getTargetTime()
                         val instant = target.atZone(ZoneId.systemDefault()).toInstant()
@@ -74,7 +78,6 @@ fun startBot() {
                 message.edit("", embed)
             }.onFailure { it.printStackTrace() }
 
-            dbClient.closeConnection()
             delay(3.toDuration(DurationUnit.MINUTES))
         }
     }
@@ -85,10 +88,9 @@ fun notifyDiscord(entry: MediaEntry, media: Media) {
         return
     if (media.thumbID.isNullOrBlank())
         return
-    val dbClient = getDBClient()
-    val thumb = dbClient.getImages(mapOf("GUID" to media.thumbID!!)).firstOrNull() ?: return
-    val users = dbClient.getUsers()
-    checkAndRemoveSchedule(dbClient, media, entry)
+    val thumb = dbClient.transaction { ImageTable.query { selectAll().where { GUID eq media.thumbID!! }.toList() } }.firstOrNull() ?: return
+    val users = dbClient.transaction { UserTable.query { selectAll().toList() } }
+    checkAndRemoveSchedule(media, entry)
 
     runCatching {
         val server = bot.getServerById(Main.config.discordBot.announceServer).getOrNull() ?: return@runCatching
@@ -101,7 +103,8 @@ fun notifyDiscord(entry: MediaEntry, media: Media) {
             return@runCatching
         }
 
-        val userFavs = dbClient.getFavourites().filter { it.mediaID eqI media.GUID }
+        val userFavs = dbClient.transaction { FavouriteTable.query { selectAll().toList() } }
+            .filter { it.mediaID eqI media.GUID }
             .associateWith { fav -> users.find { it.GUID eqI fav.userID } }
             .filterValues { it != null }
             .mapValues { runCatching { bot.getUserById(it.value!!.discordID).get() }.getOrNull() }
@@ -143,16 +146,14 @@ fun notifyDiscord(entry: MediaEntry, media: Media) {
                 runCatching { it?.sendMessage("`${media.name} - ${entry.entryNumber}` has been added!")?.join() }
             }
         }
-    }.also {
-        dbClient.closeConnection()
     }
 }
 
-private fun checkAndRemoveSchedule(dbClient: StyxDBClient, media: Media, entry: MediaEntry) {
-    val schedule = dbClient.getSchedules(mapOf("mediaID" to media.GUID)).firstOrNull() ?: return
+private fun checkAndRemoveSchedule(media: Media, entry: MediaEntry) {
+    val schedule = dbClient.transaction { MediaScheduleTable.query { selectAll().where { mediaID eq media.GUID }.toList() } }.firstOrNull() ?: return
     if (schedule.finalEpisodeCount <= 0)
         return
     val episode = entry.entryNumber.toDoubleOrNull() ?: return
     if (episode.roundToInt() >= schedule.finalEpisodeCount)
-        dbClient.delete(schedule)
+        dbClient.transaction { MediaScheduleTable.deleteWhere { mediaID eq media.GUID } }
 }

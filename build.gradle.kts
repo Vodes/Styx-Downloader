@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
     kotlin("jvm") version "1.9.23"
     kotlin("plugin.serialization") version "1.9.23"
@@ -8,24 +10,25 @@ plugins {
 }
 
 group = "moe.styx"
-version = "0.0.5"
+version = "0.1.0"
 
 repositories {
     mavenCentral()
     maven("https://repo.styx.moe/releases")
+    maven("https://repo.styx.moe/snapshots")
     maven("https://jitpack.io")
 }
 
 dependencies {
-    implementation("moe.styx:styx-db:0.0.8")
+    implementation("moe.styx:styx-db:0.1.1")
     implementation("com.github.Vodes:PircBot:873bc4aa78")
 
     implementation("net.peanuuutz.tomlkt:tomlkt:0.3.7")
     implementation("com.github.ajalt.mordant:mordant:2.4.0")
     implementation("de.androidpit:color-thief:1.1.2")
     implementation("com.google.guava:guava:33.1.0-jre")
+    implementation("org.postgresql:postgresql:42.7.3")
     implementation("com.apptasticsoftware:rssreader:3.6.0")
-    implementation("com.mysql:mysql-connector-j:8.3.0")
     implementation("org.apache.commons:commons-collections4:4.4")
     implementation("com.twelvemonkeys.imageio:imageio-core:3.10.1")
     runtimeOnly("com.twelvemonkeys.imageio:imageio-webp:3.10.1")
@@ -44,8 +47,12 @@ tasks.test {
     useJUnitPlatform()
 }
 
+tasks.withType<ShadowJar> {
+
+}
+
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
 application {
@@ -54,7 +61,7 @@ application {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
     withSourcesJar()
     withJavadocJar()

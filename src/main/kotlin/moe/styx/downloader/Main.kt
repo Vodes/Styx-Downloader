@@ -2,13 +2,11 @@ package moe.styx.downloader
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import kotlinx.datetime.Clock
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
-import moe.styx.common.data.Changes
 import moe.styx.common.http.getHttpClient
-import moe.styx.common.json
 import moe.styx.common.util.launchGlobal
+import moe.styx.db.DBClient
 import moe.styx.downloader.ftp.FTPHandler
 import moe.styx.downloader.other.IRCClient
 import moe.styx.downloader.other.MetadataFetcher
@@ -32,15 +30,16 @@ object Main {
     fun isInitialized(): Boolean {
         return ::config.isInitialized
     }
+}
 
-    fun updateEntryChanges() {
-        val changesFile = File(appDir.parentFile, "changes.json")
-        if (!changesFile.exists())
-            return
-
-        val changes = runCatching { json.decodeFromString<Changes>(changesFile.readText()) }.getOrNull()
-        changesFile.writeText(json.encodeToString(Changes(changes?.media ?: 0, Clock.System.now().epochSeconds)))
-    }
+val dbClient by lazy {
+    DBClient(
+        "jdbc:postgresql://${Main.config.dbConfig.ip}/Styx",
+        "org.postgresql.Driver",
+        Main.config.dbConfig.user,
+        Main.config.dbConfig.pass,
+        10
+    )
 }
 
 fun loadConfig(args: Array<String> = emptyArray()) {

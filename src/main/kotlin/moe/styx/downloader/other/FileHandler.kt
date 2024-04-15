@@ -6,15 +6,19 @@ import moe.styx.common.data.*
 import moe.styx.common.data.MediaInfo
 import moe.styx.common.extension.*
 import moe.styx.common.util.launchGlobal
-import moe.styx.db.*
+import moe.styx.db.tables.ChangesTable
+import moe.styx.db.tables.MediaEntryTable
+import moe.styx.db.tables.MediaInfoTable
+import moe.styx.db.tables.MediaTable
 import moe.styx.downloader.Main
-import moe.styx.downloader.getDBClient
+import moe.styx.downloader.dbClient
 import moe.styx.downloader.other.MetadataFetcher.addEntry
 import moe.styx.downloader.parsing.AnitomyResults
 import moe.styx.downloader.parsing.parseEpisodeAndVersion
 import moe.styx.downloader.parsing.parseMetadata
 import moe.styx.downloader.utils.*
 import moe.styx.downloader.utils.Log
+import org.jetbrains.exposed.sql.selectAll
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
@@ -26,7 +30,7 @@ private val epFormat = DecimalFormat("0.#")
 fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption): Boolean {
     val anitomyResults = parseMetadata(file.name)
     val (episodeWithOffset, version) = anitomyResults.parseEpisodeAndVersion(option.episodeOffset) ?: return false
-    val media = getDBClient().executeGet { getMedia(mapOf("GUID" to target.mediaID)) }.firstOrNull() ?: return false
+    val media = dbClient.transaction { MediaTable.query { selectAll().where { GUID eq target.mediaID }.toList() } }.firstOrNull() ?: return false
     var outname = (if (option.overrideNamingTemplate.isNullOrBlank()) target.namingTemplate else option.overrideNamingTemplate)!!
         .fillTokens(media, option, anitomyResults).toFileSystemCompliantName()
     if (!outname.endsWith(".mkv", true))
@@ -40,7 +44,7 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
     muxDir.mkdirs()
 
     val output = File(outDir, outname)
-    val previous = getDBClient().executeGet { getEntries(mapOf("mediaID" to media.GUID)) }
+    val previous = dbClient.transaction { MediaEntryTable.query { selectAll().where { mediaID eq media.GUID }.toList() } }
         .find { it.entryNumber.toDoubleOrNull() == episodeWithOffset.toDoubleOrNull() }
     if (option.processingOptions != null && option.processingOptions!!.needsMuxtools()) {
         val logFile = File(muxDir, "Mux Log - ${Log.getFormattedTime().replace(":", "-")}.txt")
@@ -106,32 +110,31 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
             previousFile.delete()
     }
 
-    getDBClient().executeAndClose {
-        val time = Clock.System.now().epochSeconds
-        val entry = previous?.copy(filePath = output.absolutePath, fileSize = output.length(), originalName = file.name)
-            ?: MediaEntry(
-                UUID.randomUUID().toString().uppercase(),
-                media.GUID,
-                time,
-                episodeWithOffset,
-                null,
-                null,
-                null,
-                null,
-                null,
-                output.absolutePath,
-                output.length(),
-                file.name
-            )
+    val time = Clock.System.now().epochSeconds
+    val entry = previous?.copy(filePath = output.absolutePath, fileSize = output.length(), originalName = file.name)
+        ?: MediaEntry(
+            UUID.randomUUID().toString().uppercase(),
+            media.GUID,
+            time,
+            episodeWithOffset,
+            null,
+            null,
+            null,
+            null,
+            null,
+            output.absolutePath,
+            output.length(),
+            file.name
+        )
 
-        if (!save(entry)) {
+    dbClient.transaction {
+        if (!MediaEntryTable.upsertItem(entry).insertedCount.toBoolean()) {
             Log.e("FileHandler for file: ${output.name}") { "Could not add entry to database!" }
-            return@executeAndClose
+            return@transaction
         }
-
         val mediaInfoResult = output.getMediaInfo()
         if (mediaInfoResult != null) {
-            save(
+            MediaInfoTable.upsertItem(
                 MediaInfo(
                     entry.GUID,
                     mediaInfoResult.videoCodec(),
@@ -143,53 +146,16 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
                 )
             )
         }
-
-        if (option.addToLegacyDatabase) {
-            getDBClient("Styx-Library").executeAndClose Legacy@{
-                val anime = getLegacyAnime(mapOf("GUID" to media.GUID)).firstOrNull() ?: return@Legacy
-                val legacyEP = getLegacyEpisodes(mapOf("Name" to anime.name)).find { it.ep.toDoubleOrNull() == entry.entryNumber.toDoubleOrNull() }
-                val convertedSize = String.format("%.2f", entry.fileSize.toDouble() / (1024 * 1024)).toDouble()
-                if (legacyEP != null)
-                    save(
-                        legacyEP.copy(
-                            filePath = entry.filePath,
-                            fileSize = convertedSize,
-                            prevName = entry.originalName
-                        )
-                    )
-                else {
-                    save(
-                        LegacyEpisodeInfo(
-                            UUID.randomUUID().toString().uppercase(),
-                            entry.GUID,
-                            time.toDateString(),
-                            anime.name,
-                            entry.entryNumber,
-                            entry.originalName,
-                            null,
-                            null,
-                            null,
-                            null,
-                            entry.filePath,
-                            convertedSize
-                        )
-                    )
-                }
-            }
-        }
-
-        if (previous == null) {
-            notifyDiscord(entry, media)
-            addEntry(entry)
-            launchGlobal {
-                getDBClient().executeAndClose {
-                    runCatching { updateMetadataForEntry(entry, media, this) }
-                }
-            }
-        }
-
-        Main.updateEntryChanges()
     }
+    if (previous == null) {
+        notifyDiscord(entry, media)
+        addEntry(entry)
+        launchGlobal {
+            runCatching { updateMetadataForEntry(entry, media) }
+        }
+    }
+
+    dbClient.transaction { ChangesTable.setToNow(false, true) }
     return true
 }
 

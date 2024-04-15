@@ -17,10 +17,10 @@ import moe.styx.common.extension.eqI
 import moe.styx.common.http.httpClient
 import moe.styx.common.util.launchGlobal
 import moe.styx.common.util.launchThreaded
-import moe.styx.db.getTargets
+import moe.styx.db.tables.DownloaderTargetsTable
 import moe.styx.downloader.Main
+import moe.styx.downloader.dbClient
 import moe.styx.downloader.episodeWanted
-import moe.styx.downloader.getDBClient
 import moe.styx.downloader.other.handleFile
 import moe.styx.downloader.parsing.ParseDenyReason
 import moe.styx.downloader.parsing.ParseResult
@@ -28,6 +28,7 @@ import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.RegexCollection
 import moe.styx.downloader.utils.getRSSOptions
 import moe.styx.downloader.utils.parentIn
+import org.jetbrains.exposed.sql.selectAll
 import java.io.File
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -51,7 +52,7 @@ object RSSHandler {
         launchGlobal {
             delay(30.toDuration(DurationUnit.SECONDS))
             while (true) {
-                val targets = getDBClient().executeGet { getTargets() }
+                val targets = dbClient.transaction { DownloaderTargetsTable.query { selectAll().toList() } }
                 val rssOptions = targets.getRSSOptions()
                 for ((feedURL, options) in rssOptions.iterator()) {
                     val results = runCatching { checkFeed(feedURL, options, targets) }.getOrNull() ?: emptyList()
@@ -89,7 +90,7 @@ object RSSHandler {
             val copied = mutableListOf<String>()
             while (true) {
                 val cutOff = Clock.System.now().toEpochMilliseconds() - 30000
-                val targets = getDBClient().executeGet { getTargets() }
+                val targets = dbClient.transaction { DownloaderTargetsTable.query { selectAll().toList() } }
                 if (tempDir.exists() && tempDir.isDirectory) {
                     (tempDir.listFiles()?.filter { it.isFile && it.lastModified() < cutOff } ?: emptyList<File>()).forEach {
                         val parseResult = targets.episodeWanted(it.name)
