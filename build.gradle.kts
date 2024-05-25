@@ -1,16 +1,14 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-
 plugins {
-    kotlin("jvm") version "1.9.23"
-    kotlin("plugin.serialization") version "1.9.23"
+    kotlin("jvm") version "2.0.0"
+    kotlin("plugin.serialization") version "2.0.0"
     application
     `java-library`
     `maven-publish`
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("io.github.goooler.shadow") version "8.1.7"
 }
 
 group = "moe.styx"
-version = "0.1.0"
+version = "0.2.0"
 
 repositories {
     mavenCentral()
@@ -20,13 +18,13 @@ repositories {
 }
 
 dependencies {
-    implementation("moe.styx:styx-db:0.1.1")
+    implementation("moe.styx:styx-db:0.2.0")
     implementation("com.github.Vodes:PircBot:873bc4aa78")
 
     implementation("net.peanuuutz.tomlkt:tomlkt:0.3.7")
-    implementation("com.github.ajalt.mordant:mordant:2.4.0")
+    implementation("com.github.ajalt.mordant:mordant:2.6.0")
     implementation("de.androidpit:color-thief:1.1.2")
-    implementation("com.google.guava:guava:33.1.0-jre")
+    implementation("com.google.guava:guava:33.2.0-jre")
     implementation("org.postgresql:postgresql:42.7.3")
     implementation("com.apptasticsoftware:rssreader:3.6.0")
     implementation("org.apache.commons:commons-collections4:4.4")
@@ -39,16 +37,6 @@ dependencies {
 
     implementation("com.github.btmxh:anitomyJ:f6e9cea8f8")
     implementation("commons-net:commons-net:3.10.0")
-
-    testImplementation(kotlin("test"))
-}
-
-tasks.test {
-    useJUnitPlatform()
-}
-
-tasks.withType<ShadowJar> {
-
 }
 
 kotlin {

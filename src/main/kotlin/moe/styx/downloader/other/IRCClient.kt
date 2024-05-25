@@ -4,6 +4,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import kotlinx.coroutines.runBlocking
 import moe.styx.common.data.SourceType
+import moe.styx.common.extension.capitalize
 import moe.styx.common.extension.eqI
 import moe.styx.common.http.httpClient
 import moe.styx.db.tables.DownloaderTargetsTable
