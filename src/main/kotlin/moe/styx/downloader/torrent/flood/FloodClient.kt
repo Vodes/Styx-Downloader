@@ -25,7 +25,7 @@ class FloodClient(private var url: String, user: String, pass: String) : Torrent
             val response = httpClient.post("$url${FloodEndpoint.AUTH}") {
                 setGenericJsonBody(mapOf("username" to user, "password" to pass))
             }
-            return@runBlocking response.status == HttpStatusCode.OK
+            return@runBlocking response.status.isSuccess()
         } catch (ex: Exception) {
             Log.e("FloodClient for $url", ex) { "Failed to send the auth request!" }
         }
@@ -39,7 +39,7 @@ class FloodClient(private var url: String, user: String, pass: String) : Torrent
             httpClient.get("$url${FloodEndpoint.TORRENT_LIST}")
         }
 
-        if (response.status == HttpStatusCode.OK) {
+        if (response.status.isSuccess()) {
             val body: JsonObject = json.decodeFromString(response.bodyAsText())
             val torrentList = body["torrents"]!!
             torrents.addAll(
@@ -102,7 +102,7 @@ class FloodClient(private var url: String, user: String, pass: String) : Torrent
                     }
                 }
             }
-            return@runBlocking response.status == HttpStatusCode.OK
+            return@runBlocking response.status.isSuccess()
         } catch (ex: Exception) {
             Log.e("FloodClient for $url", ex, printStack = true) { "Failed to delete torrent!" }
         }
@@ -117,7 +117,7 @@ class FloodClient(private var url: String, user: String, pass: String) : Torrent
                     setGenericJsonBody(mapOf("hashes" to listOf(hash), "tags" to tagList))
                 }
             }
-            return@runBlocking response.status == HttpStatusCode.OK
+            return@runBlocking response.status.isSuccess()
         } catch (ex: Exception) {
             Log.e("FloodClient for $url", ex, printStack = true) { "Failed to set tags!" }
         }

@@ -2,9 +2,9 @@ package moe.styx.downloader
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import moe.styx.common.extension.eqI
 import moe.styx.downloader.torrent.TorrentClient
 import moe.styx.downloader.torrent.flood.FloodClient
+import moe.styx.downloader.torrent.transmission.TransmissionClient
 import moe.styx.downloader.utils.Log
 import java.io.File
 
@@ -47,11 +47,14 @@ data class TorrentConfig(
             Log.e { "No valid URL or login data was found in the torrent config." }
             return null
         }
-        if (type eqI "Flood") {
-            return FloodClient(url, user, pass)
+        val client = when (type.trim().lowercase()) {
+            "flood" -> FloodClient(url, user, pass)
+            "transmission" -> TransmissionClient(url, user, pass)
+            else -> null
         }
-        Log.e { "Unknown TorrentClient type!" }
-        return null
+        if (client == null)
+            Log.e { "Unknown TorrentClient type!" }
+        return client
     }
 }
 
