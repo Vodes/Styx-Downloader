@@ -10,25 +10,40 @@ import java.text.DecimalFormat
 typealias AnitomyResults = List<Element>
 
 fun parseMetadata(toParse: String): AnitomyResults {
-    var toParse = toParse
+    var adjusted = toParse
 
-    val repackMatch = RegexCollection.repackRegex.find(toParse)
+    val repackMatch = RegexCollection.repackRegex.find(adjusted)
     if (repackMatch != null)
-        toParse =
-            toParse.replace(repackMatch.groups[0]!!.value, repackMatch.groups[1]?.let { ".V${it.value.toIntOrNull()?.plus(1) ?: 2}." } ?: ".V2.")
+        adjusted =
+            adjusted.replace(repackMatch.groups[0]!!.value, repackMatch.groups[1]?.let { ".V${it.value.toIntOrNull()?.plus(1) ?: 2}." } ?: ".V2.")
 
-    val match = RegexCollection.fixPattern.matchEntire(toParse)
+    val match = RegexCollection.fixPattern.matchEntire(adjusted)
     if (match != null) {
         // Space out stuff like S01E01v2 to be S01E01 v2 (because Anitomy bad)
-        toParse = toParse.replace(
+        adjusted = adjusted.replace(
             match.groups["whole"]!!.value,
             "%s %s".format(match.groups["ep"]!!.value, match.groups["version"]!!.value)
         )
     }
     // Other misc fixes that kinda fuck with anitomy
     // Single letter parts in scene naming, for example Invincible.2021.S02E01.A.LESSON.FOR.YOUR.NEXT.LIFE.1080p.AMZN.WEB-DL.DDP5.1.H.264-FLUX.mkv
-    toParse = toParse.replaceFirst(RegexCollection.singleLetterWithDot, " ")
-    return AnitomyJ.parse(toParse)
+    adjusted = adjusted.replaceFirst(RegexCollection.singleLetterWithDot, " ")
+    adjusted = adjusted.replaceFirst(RegexCollection.crc32Regex, "")
+
+    val result = AnitomyJ.parse(adjusted).toMutableList()
+
+    // Sometimes it doesn't seem to parse the season at all.
+    val episode = result.find { it.category.toString() eqI "kElementEpisodeNumber" }?.value
+    if (episode == null) {
+        val zeroMatch = RegexCollection.seasonZeroRegex.find(adjusted)
+        if (zeroMatch != null) {
+            result.add(Element(Element.ElementCategory.kElementEpisodeNumber, zeroMatch.groups["ep"]!!.value))
+            result.removeIf { it.category == Element.ElementCategory.kElementAnimeSeason }
+            result.add(Element(Element.ElementCategory.kElementAnimeSeason, "00"))
+            Log.w { "Had to 'manually' parse Season 0 episode for: $toParse" }
+        }
+    }
+    return result
 }
 
 fun List<Element>.parseEpisodeAndVersion(offset: Int?): Pair<String, Int>? {
