@@ -12,7 +12,17 @@ object Transmission {
 
     @Serializable
     data class TorrentListRequestArgs(
-        val fields: List<String> = listOf("addedDate", "status", "hashString", "name", "labels", "isFinished")
+        val fields: List<String> = listOf(
+            "addedDate",
+            "status",
+            "hashString",
+            "name",
+            "labels",
+            "isFinished",
+            "leftUntilDone",
+            "percentDone",
+            "percentComplete"
+        )
     )
 
     @Serializable

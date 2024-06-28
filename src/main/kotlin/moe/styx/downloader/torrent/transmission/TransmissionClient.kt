@@ -67,7 +67,7 @@ class TransmissionClient(private var url: String, user: String, pass: String) : 
             torrents.addAll(
                 body["arguments"]?.jsonObject?.get("torrents")?.jsonArray?.map { element ->
                     val torrentObject = element.jsonObject
-                    val isFinished = torrentObject["isFinished"]?.jsonPrimitive?.boolean == true
+                    val isFinished = (torrentObject["percentDone"]?.jsonPrimitive?.double ?: 0.0) >= 1.0
                     Torrent(
                         torrentObject["name"]?.jsonPrimitive?.content!!,
                         torrentObject["hashString"]?.jsonPrimitive?.content!!,
@@ -116,6 +116,7 @@ class TransmissionClient(private var url: String, user: String, pass: String) : 
             }
         } catch (ex: Exception) {
             Log.e("TransmissionClient for: $url", ex) { "Could not add torrent!" }
+            ex.printStackTrace()
         }
         return@runBlocking null
     }
