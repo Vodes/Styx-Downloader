@@ -82,6 +82,7 @@ class TransmissionClient(private var url: String, user: String, pass: String) : 
     }
 
     override fun addTorrentByURL(torrentURL: String, destinationDir: String, start: Boolean): Torrent? = runBlocking {
+        var responseText = ""
         try {
             val requestBody = json.encodeToString(
                 Transmission.TorrentAddRequest(
@@ -97,9 +98,9 @@ class TransmissionClient(private var url: String, user: String, pass: String) : 
                     setTransmissionHeaders()
                 }
             }
-
+            responseText = response.bodyAsText()
             if (response.status.isSuccess()) {
-                val body: JsonObject = json.decodeFromString(response.bodyAsText())
+                val body: JsonObject = json.decodeFromString(responseText)
                 var torrentJson = body["arguments"]?.jsonObject
                 if (torrentJson != null) {
                     torrentJson = if (torrentJson.contains("torrent-duplicate")) {
@@ -113,9 +114,10 @@ class TransmissionClient(private var url: String, user: String, pass: String) : 
                         currentUnixSeconds()
                     )
                 }
-            }
+            } else
+                throw Exception("Torrent add request was not successful.")
         } catch (ex: Exception) {
-            Log.e("TransmissionClient for: $url", ex) { "Could not add torrent!" }
+            Log.e("TransmissionClient for: $url", ex) { "Could not add torrent! Response: \n$responseText" }
             ex.printStackTrace()
         }
         return@runBlocking null

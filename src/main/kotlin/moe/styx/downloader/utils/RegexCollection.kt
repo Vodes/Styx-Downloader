@@ -4,12 +4,15 @@ import moe.styx.common.extension.anyEquals
 
 object RegexCollection {
     val fixPattern = "(?<whole>(?<ep>(?:S\\d+)?[E ]\\d+)(?<version>v\\d))".toRegex(RegexOption.IGNORE_CASE)
-    val singleLetterWithDot = "\\.[A-Za-z]\\.".toRegex()
+    val singleLetterWithDot = "\\d(\\.[A-Za-z]\\.)(?!264|265|2\\.0)".toRegex()
     val torrentHrefRegex = "href=\"(?<url>https?:\\/\\/[^ \"<>]+?\\.torrent)\"".toRegex(RegexOption.IGNORE_CASE)
     val generalURLRegex = "https?:\\/\\/.+".toRegex(RegexOption.IGNORE_CASE)
     val specialEpisodeRegex = "(?:(SP\\d)|(?:(?:E| )(?<num>\\d+\\.\\d(?: |\\.))))".toRegex()
-    val crc32Regex = "(?:\\[|\\(|\\.)[0-F]{8}(?:\\]|\\)|\\.)".toRegex()
+    val crc32Regex = " ?(?:\\[|\\(|\\.)[0-F]{8}(?:\\]|\\)|\\.) ?".toRegex()
     val seasonZeroRegex = "(?: |\\.)S00E(?<ep>\\d+)(?: |\\.)".toRegex()
+    val p2pGroupRegex = ".+-(?<name>\\w+)\$".toRegex()
+
+    val oldNandesukaFixRegex = ".+(-(?<name>\\w+)(?<site> \\((?:CR|NF|AMZN|HIDIVE|HIDI|ADN|DSNP|HULU)\\)))".toRegex()
 
     val xdccAnnounceRegex = "\\/msg (?<user>.+?) xdcc send #?(?<num>\\d+)".toRegex(RegexOption.IGNORE_CASE)
     val repackRegex = "(?:\\.| )REPACK(?<num>\\d+)?(?:\\.| )".toRegex(RegexOption.IGNORE_CASE)

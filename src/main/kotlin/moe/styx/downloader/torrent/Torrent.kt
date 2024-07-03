@@ -14,7 +14,7 @@ abstract class TorrentClient(val user: String, val pass: String) {
 
     inline fun attemptRequest(requestFunc: () -> HttpResponse): HttpResponse {
         var response = requestFunc()
-        if (response.status in arrayOf(HttpStatusCode.Forbidden, HttpStatusCode.Unauthorized)) {
+        if (response.status in arrayOf(HttpStatusCode.Forbidden, HttpStatusCode.Unauthorized, HttpStatusCode.Conflict)) {
             if (!authenticate()) {
                 Log.e { "Could not reauthenticate client!" }
                 return response

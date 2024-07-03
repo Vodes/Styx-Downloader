@@ -20,6 +20,7 @@ repositories {
 dependencies {
     implementation("moe.styx:styx-db:0.2.1")
     implementation("com.github.Vodes:PircBot:873bc4aa78")
+    implementation("com.github.Vodes:anitomyJ:aa7afa2a42")
 
     implementation("net.peanuuutz.tomlkt:tomlkt:0.3.7")
     implementation("com.github.ajalt.mordant:mordant:2.6.0")
@@ -34,9 +35,9 @@ dependencies {
     implementation("org.javacord:javacord:3.8.0")
     implementation("org.slf4j:slf4j-simple:2.0.12")
     runtimeOnly("org.apache.logging.log4j:log4j-to-slf4j:2.23.1")
-
-    implementation("com.github.btmxh:anitomyJ:f6e9cea8f8")
     implementation("commons-net:commons-net:3.10.0")
+
+    testImplementation(kotlin("test"))
 }
 
 kotlin {

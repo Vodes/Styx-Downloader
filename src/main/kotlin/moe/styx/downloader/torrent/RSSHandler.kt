@@ -157,10 +157,12 @@ object RSSHandler {
             var done = false
             while (!done) {
                 delay(3000)
-                val allTorrents = torrentClient.listTorrents()
-                val found = allTorrents.find { it.hash eqI torrent.hash }
-                if (found == null || found.isCompleted())
-                    done = true
+                runCatching {
+                    val allTorrents = torrentClient.listTorrents()
+                    val found = allTorrents.find { it.hash eqI torrent.hash }
+                    if (found == null || found.isCompleted())
+                        done = true
+                }
                 delay(1000)
             }
             torrentClient.deleteTorrent(torrent.hash)
