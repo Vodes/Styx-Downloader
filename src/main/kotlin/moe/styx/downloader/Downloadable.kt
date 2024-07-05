@@ -12,6 +12,7 @@ import org.jetbrains.exposed.sql.selectAll
 import java.io.File
 import kotlin.math.abs
 
+val specialNumbers = listOf("2.0", "5.1", "7.1", "6.0", "5.0")
 
 fun DownloadableOption.episodeWanted(toMatch: String, parent: DownloaderTarget, rss: Boolean = false): ParseResult {
     if (!this.matches(toMatch, rss)) {
@@ -22,7 +23,7 @@ fun DownloadableOption.episodeWanted(toMatch: String, parent: DownloaderTarget, 
         val matches = RegexCollection.specialEpisodeRegex.findAll(toMatch)
         for (match in matches) {
             val group = match.groups["num"]?.value ?: continue
-            if (!group.trim().equalsAny("2.0", "5.1", "7.1")) {
+            if (!group.trim().equalsAny(specialNumbers)) {
                 return ParseResult.DENIED(ParseDenyReason.IsSpecialOrFiller)
             }
         }
@@ -30,6 +31,10 @@ fun DownloadableOption.episodeWanted(toMatch: String, parent: DownloaderTarget, 
 
     val (episode, version) = parseEpisodeAndVersion(toMatch, episodeOffset)
         ?: return ParseResult.FAILED(ParseDenyReason.InvalidEpisodeNumber)
+
+    // Another specials check, just to be safe
+    if (Main.config.ignoreSpecialsAndPoint5 && episode.toIntOrNull() == null)
+        return ParseResult.DENIED(ParseDenyReason.IsSpecialOrFiller)
 
     // Check if we already have the episode in the database
     val dbEpisode = dbClient.transaction { MediaEntryTable.query { selectAll().where { mediaID eq parent.mediaID }.toList() } }

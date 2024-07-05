@@ -53,6 +53,13 @@ private fun testParser() {
         "Given"
     )
 
+    parseMetadata("[HatSubs] One Piece 1088.5 (WEB 1080p) [BAACCC99].mkv").assertResult(
+        "HatSubs",
+        "1088.5",
+        null,
+        "One Piece"
+    )
+
     // Below here are worst case scenarios
     parseMetadata("KONOSUBA.-Gods.blessing.on.this.wonderful.world!.S03E11.Gods.Blessings.for.These.Unchanging.Days!.1080p.CR.WEB-DL.DUAL.AAC2.0.H.264.MSubs-ToonsHub.mkv").assertResult(
         "ToonsHub",
@@ -74,7 +81,7 @@ private fun testParser() {
         "01",
         "2.5 Dimensional Seduction"
     )
-    
+
     parseMetadata("[SubsPlus+] 2.5 Dimensional Seduction - S01E01 (CR WEB 1080p AVC EAC3).mkv").assertResult(
         "SubsPlus+",
         "01",
