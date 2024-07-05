@@ -68,7 +68,14 @@ private fun testParser() {
         "Yubisaki to Renren"
     )
 
-    parseMetadata("[SubsPlus+] 2.5 Dimensional Seduction - S01E01 (CR WEB 1080p AVC EAC3) [388F142A].mkv").assertResult(
+    parseMetadata("[SubsPlus+] 2.5 Dimensional Seduction - S01E01 (CR WEB 1080p AVC EAC3) | 2.5 Jigen no Ririsa").assertResult(
+        "SubsPlus+",
+        "01",
+        "01",
+        "2.5 Dimensional Seduction"
+    )
+    
+    parseMetadata("[SubsPlus+] 2.5 Dimensional Seduction - S01E01 (CR WEB 1080p AVC EAC3).mkv").assertResult(
         "SubsPlus+",
         "01",
         "01",
@@ -80,6 +87,13 @@ private fun testParser() {
         "13",
         null,
         "NieR Automata Ver1.1a"
+    )
+
+    parseMetadata("2.5 Jigen no Ririsa E01 [1080p][AAC][JapDub][GerSub][Web-DL].mkv").assertResult(
+        "JapDub",
+        "01",
+        "01",
+        "2.5 Jigen no Ririsa"
     )
 
     parseMetadata("NieRAutomata Ver 1.1a S2E01 [1080p][AAC][JapDub][GerEngSub][Web-DL].mkv").assertResult(

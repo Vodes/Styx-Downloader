@@ -36,7 +36,7 @@ fun parseMetadata(toParse: String): AnitomyResults {
         adjusted =
             adjusted.replace(repackMatch.groups[0]!!.value, repackMatch.groups[1]?.let { ".V${it.value.toIntOrNull()?.plus(1) ?: 2}." } ?: ".V2.")
 
-    val match = RegexCollection.fixPattern.find(adjusted)
+    var match = RegexCollection.fixPattern.find(adjusted)
     if (match != null) {
         // Space out stuff like S01E01v2 to be S01E01 v2 (because Anitomy bad)
         adjusted = adjusted.replace(
@@ -44,6 +44,13 @@ fun parseMetadata(toParse: String): AnitomyResults {
             "%s %s".format(match.groups["ep"]!!.value, match.groups["version"]!!.value)
         )
     }
+    match = RegexCollection.semiFixPattern.find(adjusted)
+    if (match != null) {
+        // Add S01 to standalone Exx
+        val episode = match.groups["ep"]!!.value
+        adjusted = adjusted.replaceFirst("E$episode", "S01E$episode")
+    }
+
     // Other misc fixes that kinda fuck with anitomy
     // Single letter parts in scene naming, for example Invincible.2021.S02E01.A.LESSON.FOR.YOUR.NEXT.LIFE.1080p.AMZN.WEB-DL.DDP5.1.H.264-FLUX.mkv
     val singleLetterMatch = RegexCollection.singleLetterWithDot.find(adjusted)

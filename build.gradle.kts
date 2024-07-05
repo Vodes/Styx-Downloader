@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "moe.styx"
-version = "0.2.5"
+version = "0.2.6"
 
 repositories {
     mavenCentral()
@@ -18,7 +18,7 @@ repositories {
 }
 
 dependencies {
-    implementation("moe.styx:styx-db:0.2.1")
+    implementation("moe.styx:styx-db:0.2.2")
     implementation("com.github.Vodes:PircBot:873bc4aa78")
     implementation("com.github.Vodes:anitomyJ:99a355bf0d")
 
