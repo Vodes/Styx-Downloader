@@ -11,7 +11,8 @@ enum class ParseDenyReason {
     WaitingForPreviousOption,
     PostIsTooOld,
     FileIsTooNew,
-    IsSpecialOrFiller
+    IsSpecialOrFiller,
+    DatabaseConnectionFailed,
 }
 
 sealed class ParseResult {

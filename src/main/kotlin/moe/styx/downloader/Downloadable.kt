@@ -37,8 +37,16 @@ fun DownloadableOption.episodeWanted(toMatch: String, parent: DownloaderTarget, 
         return ParseResult.DENIED(ParseDenyReason.IsSpecialOrFiller)
 
     // Check if we already have the episode in the database
-    val dbEpisode = dbClient.transaction { MediaEntryTable.query { selectAll().where { mediaID eq parent.mediaID }.toList() } }
-        .find { it.entryNumber.toDoubleOrNull() == episode.toDoubleOrNull() }
+    val dbEpisode = runCatching {
+        dbClient.transaction {
+            MediaEntryTable.query { selectAll().where { mediaID eq parent.mediaID }.toList() }
+        }.find {
+            it.entryNumber.toDoubleOrNull() == episode.toDoubleOrNull()
+        }
+    }.onFailure {
+        it.printStackTrace()
+        return ParseResult.DENIED(ParseDenyReason.DatabaseConnectionFailed)
+    }.getOrNull()
 
     // Check what "option" the episode in the database corresponds to (if same and not a different version return false)
     val existingOptionVal = listOf(parent).matchesAny(dbEpisode?.originalName, false)?.second?.priority ?: -1

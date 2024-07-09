@@ -6,6 +6,7 @@ import moe.styx.downloader.torrent.TorrentClient
 import moe.styx.downloader.torrent.flood.FloodClient
 import moe.styx.downloader.torrent.transmission.TransmissionClient
 import moe.styx.downloader.utils.Log
+import net.peanuuutz.tomlkt.TomlComment
 import java.io.File
 
 @Serializable
@@ -40,7 +41,14 @@ data class TorrentConfig(
     val user: String = "",
     val pass: String = "",
     val defaultNonSeedDir: String = "",
-    val defaultSeedDir: String = ""
+    val defaultSeedDir: String = "",
+    @TomlComment(
+        """
+        Do not include a query string in templates if you want to use dynamic queries in the webui!
+        You can use them with %example%.
+        """
+    )
+    val feedTemplates: Map<String, String> = mapOf("example" to "https://feed.animetosho.org/rss2")
 ) {
     fun createClient(): TorrentClient? {
         if (url.isBlank() || user.isBlank() || pass.isBlank()) {

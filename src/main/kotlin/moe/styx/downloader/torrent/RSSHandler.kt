@@ -25,10 +25,7 @@ import moe.styx.downloader.other.handleFile
 import moe.styx.downloader.parsing.ParseDenyReason
 import moe.styx.downloader.parsing.ParseResult
 import moe.styx.downloader.torrent.transmission.TransmissionClient
-import moe.styx.downloader.utils.Log
-import moe.styx.downloader.utils.RegexCollection
-import moe.styx.downloader.utils.getRSSOptions
-import moe.styx.downloader.utils.parentIn
+import moe.styx.downloader.utils.*
 import org.jetbrains.exposed.sql.selectAll
 import java.io.File
 import java.time.ZonedDateTime
@@ -120,8 +117,15 @@ object RSSHandler {
 
     fun checkFeed(feedURL: String, options: List<DownloadableOption>, targets: List<DownloaderTarget>): List<Pair<FeedItem, ParseResult>> =
         runBlocking {
-            val source = "RSSHandler for URL: $feedURL"
-            val response = httpClient.get(feedURL)
+            val (resolved, query) = resolveTemplate(feedURL)
+            val source = "RSSHandler for URL: $resolved"
+            val response = httpClient.get(resolved) {
+                url {
+                    if (query.isNotBlank() && !parameters.contains("q")) {
+                        parameters.append("q", query)
+                    }
+                }
+            }
             if (!response.status.isSuccess()) {
                 val body = response.bodyAsText()
                 Log.e(source) { "Failed to fetch feed. Error Code: ${response.status}\nResponse body: $body" }
