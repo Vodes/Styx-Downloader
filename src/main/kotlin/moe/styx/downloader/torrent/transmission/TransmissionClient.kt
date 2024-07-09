@@ -67,7 +67,6 @@ class TransmissionClient(private var url: String, user: String, pass: String) : 
             torrents.addAll(
                 body["arguments"]?.jsonObject?.get("torrents")?.jsonArray?.map { element ->
                     val torrentObject = element.jsonObject
-                    Log.i { torrentObject.toString() }
                     val isFinished =
                         (torrentObject["percentDone"]?.jsonPrimitive?.double ?: 0.0) >= 1.0 &&
                                 torrentObject["error"]?.jsonPrimitive?.intOrNull == 0 &&
