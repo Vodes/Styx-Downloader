@@ -5,13 +5,13 @@ import kotlinx.serialization.Serializable
 
 object Transmission {
     @Serializable
-    data class TorrentListRequest(
+    data class ListRequest(
         val method: String = "torrent-get",
-        val arguments: TorrentListRequestArgs = TorrentListRequestArgs()
+        val arguments: ListRequestArgs = ListRequestArgs()
     )
 
     @Serializable
-    data class TorrentListRequestArgs(
+    data class ListRequestArgs(
         val fields: List<String> = listOf(
             "addedDate",
             "status",
@@ -21,15 +21,16 @@ object Transmission {
             "isFinished",
             "leftUntilDone",
             "percentDone",
-            "percentComplete"
+            "percentComplete",
+            "error"
         )
     )
 
     @Serializable
-    data class TorrentAddRequest(val method: String = "torrent-add", @SerialName("arguments") val torrent: TorrentAddRequestTorrent)
+    data class AddRequest(val method: String = "torrent-add", @SerialName("arguments") val torrent: AddRequestTorrent)
 
     @Serializable
-    data class TorrentAddRequestTorrent(
+    data class AddRequestTorrent(
         val filename: String,
         @SerialName("download-dir") val downloadDir: String,
         val paused: Boolean,
@@ -37,9 +38,15 @@ object Transmission {
     )
 
     @Serializable
-    data class TorrentRemoveRequest(val method: String = "torrent-remove", val arguments: TorrentRemoveRequestArgs)
+    data class RemoveRequest(val method: String = "torrent-remove", val arguments: RemoveRequestArgs)
 
     @Serializable
-    data class TorrentRemoveRequestArgs(@SerialName("ids") val hashes: List<String>, @SerialName("delete-local-data") val deleteFiles: Boolean)
+    data class RemoveRequestArgs(@SerialName("ids") val hashes: List<String>, @SerialName("delete-local-data") val deleteFiles: Boolean)
+
+    @Serializable
+    data class StopRequest(val method: String = "torrent-stop", val arguments: StopRequestArgs)
+
+    @Serializable
+    data class StopRequestArgs(@SerialName("ids") val hashes: List<String>)
 }
 

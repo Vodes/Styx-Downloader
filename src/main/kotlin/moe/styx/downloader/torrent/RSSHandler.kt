@@ -24,6 +24,7 @@ import moe.styx.downloader.episodeWanted
 import moe.styx.downloader.other.handleFile
 import moe.styx.downloader.parsing.ParseDenyReason
 import moe.styx.downloader.parsing.ParseResult
+import moe.styx.downloader.torrent.transmission.TransmissionClient
 import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.RegexCollection
 import moe.styx.downloader.utils.getRSSOptions
@@ -152,20 +153,25 @@ object RSSHandler {
             return@runBlocking results.toList()
         }
 
-    private fun waitAndDelete(torrent: Torrent) {
+    private fun waitAndDelete(torrent: Torrent) = waitAndDelete(torrentClient, torrent)
+
+    fun waitAndDelete(client: TorrentClient, torrent: Torrent) {
         launchThreaded {
             var done = false
             while (!done) {
                 delay(3000)
                 runCatching {
-                    val allTorrents = torrentClient.listTorrents()
+                    val allTorrents = client.listTorrents()
                     val found = allTorrents.find { it.hash eqI torrent.hash }
-                    if (found == null || found.isCompleted())
+                    if (found == null || found.isCompleted()) {
                         done = true
+                        if (client is TransmissionClient)
+                            delay(9000)
+                    }
                 }
                 delay(1000)
             }
-            torrentClient.deleteTorrent(torrent.hash)
+            (client as? TransmissionClient)?.stopTorrent(torrent.hash) ?: client.deleteTorrent(torrent.hash)
         }
     }
 }

@@ -57,7 +57,7 @@ class TransmissionClient(private var url: String, user: String, pass: String) : 
         val torrents = mutableListOf<Torrent>()
         val response = attemptRequest {
             httpClient.post(url) {
-                setBody(json.encodeToString(Transmission.TorrentListRequest()))
+                setBody(json.encodeToString(Transmission.ListRequest()))
                 contentType(ContentType.Application.Json)
                 setTransmissionHeaders()
             }
@@ -67,7 +67,11 @@ class TransmissionClient(private var url: String, user: String, pass: String) : 
             torrents.addAll(
                 body["arguments"]?.jsonObject?.get("torrents")?.jsonArray?.map { element ->
                     val torrentObject = element.jsonObject
-                    val isFinished = (torrentObject["percentDone"]?.jsonPrimitive?.double ?: 0.0) >= 1.0
+                    Log.i { torrentObject.toString() }
+                    val isFinished =
+                        (torrentObject["percentDone"]?.jsonPrimitive?.double ?: 0.0) >= 1.0 &&
+                                torrentObject["error"]?.jsonPrimitive?.intOrNull == 0 &&
+                                torrentObject["status"]?.jsonPrimitive?.intOrNull in arrayOf(0, 6)
                     Torrent(
                         torrentObject["name"]?.jsonPrimitive?.content!!,
                         torrentObject["hashString"]?.jsonPrimitive?.content!!,
@@ -85,8 +89,8 @@ class TransmissionClient(private var url: String, user: String, pass: String) : 
         var responseText = ""
         try {
             val requestBody = json.encodeToString(
-                Transmission.TorrentAddRequest(
-                    torrent = Transmission.TorrentAddRequestTorrent(
+                Transmission.AddRequest(
+                    torrent = Transmission.AddRequestTorrent(
                         torrentURL, destinationDir, !start
                     )
                 )
@@ -126,7 +130,7 @@ class TransmissionClient(private var url: String, user: String, pass: String) : 
     override fun deleteTorrent(hash: String, deleteFiles: Boolean): Boolean = runBlocking {
         try {
             val requestBody = json.encodeToString(
-                Transmission.TorrentRemoveRequest(arguments = Transmission.TorrentRemoveRequestArgs(listOf(hash), deleteFiles))
+                Transmission.RemoveRequest(arguments = Transmission.RemoveRequestArgs(listOf(hash), deleteFiles))
             )
             val response = attemptRequest {
                 httpClient.post(url) {
@@ -145,6 +149,27 @@ class TransmissionClient(private var url: String, user: String, pass: String) : 
         return@runBlocking false
     }
 
+    fun stopTorrent(hash: String): Boolean = runBlocking {
+        try {
+            val requestBody = json.encodeToString(
+                Transmission.StopRequest(arguments = Transmission.StopRequestArgs(listOf(hash)))
+            )
+            val response = attemptRequest {
+                httpClient.post(url) {
+                    setBody(requestBody)
+                    contentType(ContentType.Application.Json)
+                    setTransmissionHeaders()
+                }
+            }
+            if (response.status.isSuccess()) {
+                val body: JsonObject = json.decodeFromString(response.bodyAsText())
+                return@runBlocking body.contains("result") && body["result"]!!.jsonPrimitive.content.equals("success", true)
+            }
+        } catch (ex: Exception) {
+            Log.e("TransmissionClient for: $url", ex) { "Could not delete torrent!" }
+        }
+        return@runBlocking false
+    }
 
     private fun HttpRequestBuilder.setTransmissionHeaders() {
         basicAuth(user, pass)
