@@ -1,5 +1,5 @@
-import moe.styx.downloader.torrent.RSSHandler.waitAndDelete
-import moe.styx.downloader.torrent.transmission.TransmissionClient
+import moe.styx.downloader.rss.RSSHandler.waitAndDelete
+import moe.styx.downloader.rss.transmission.TransmissionClient
 import kotlin.test.assertTrue
 
 object TransmissionTests {

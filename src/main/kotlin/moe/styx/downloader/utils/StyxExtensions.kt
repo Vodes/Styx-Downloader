@@ -17,8 +17,8 @@ infix fun DownloadableOption.parentIn(list: List<DownloaderTarget>): DownloaderT
 /**
  * We only want to get each RSS feed once, so we map it to Feed and Options that use the feed
  */
-fun List<DownloaderTarget>.getRSSOptions(): Map<String, List<DownloadableOption>> {
-    val options = this.flatMap { it.options }.filter { !it.sourcePath.isNullOrBlank() && it.source == SourceType.TORRENT }
+fun List<DownloaderTarget>.getRSSOptions(type: SourceType): Map<String, List<DownloadableOption>> {
+    val options = this.flatMap { it.options }.filter { !it.sourcePath.isNullOrBlank() && it.source == type }
     return options.groupBy { it.sourcePath!! }
 }
 

@@ -2,9 +2,9 @@ package moe.styx.downloader
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import moe.styx.downloader.torrent.TorrentClient
-import moe.styx.downloader.torrent.flood.FloodClient
-import moe.styx.downloader.torrent.transmission.TransmissionClient
+import moe.styx.downloader.rss.TorrentClient
+import moe.styx.downloader.rss.flood.FloodClient
+import moe.styx.downloader.rss.transmission.TransmissionClient
 import moe.styx.downloader.utils.Log
 import net.peanuuutz.tomlkt.TomlComment
 import java.io.File
@@ -20,8 +20,8 @@ data class Config(
     val siteBaseUrl: String = "",
     @SerialName("DatabaseConfig")
     val dbConfig: DbConfig = DbConfig(),
-    @SerialName("TorrentConfig")
-    val torrentConfig: TorrentConfig = TorrentConfig(),
+    @SerialName("RSSConfig")
+    val rssConfig: RSSConfig = RSSConfig(),
     @SerialName("IRCConfig")
     val ircConfig: IRCConfig = IRCConfig(mapOf("irc.rizon.net" to listOf("#subsplease", "#Styx-XDCC"))),
     @SerialName("DiscordBotConfig")
@@ -35,29 +35,29 @@ data class IRCConfig(
 )
 
 @Serializable
-data class TorrentConfig(
-    val type: String = "Flood",
-    val url: String = "",
-    val user: String = "",
-    val pass: String = "",
-    val defaultNonSeedDir: String = "",
+data class RSSConfig(
     val defaultSeedDir: String = "",
+    val defaultNonSeedDir: String = "",
     @TomlComment(
         """
         Do not include a query string in templates if you want to use dynamic queries in the webui!
         You can use them with %example%.
         """
     )
-    val feedTemplates: Map<String, String> = mapOf("example" to "https://feed.animetosho.org/rss2")
+    val feedTemplates: Map<String, String> = mapOf("example" to "https://feed.animetosho.org/rss2"),
+    @SerialName("TorrentClient")
+    val tcCfg: TorrentClientConfig = TorrentClientConfig(),
+    @SerialName("SABnzbd")
+    val sabCfg: SABnzbdConfig = SABnzbdConfig()
 ) {
-    fun createClient(): TorrentClient? {
-        if (url.isBlank() || user.isBlank() || pass.isBlank()) {
+    fun createTorrentClient(): TorrentClient? {
+        if (tcCfg.url.isBlank() || tcCfg.user.isBlank() || tcCfg.pass.isBlank()) {
             Log.e { "No valid URL or login data was found in the torrent config." }
             return null
         }
-        val client = when (type.trim().lowercase()) {
-            "flood" -> FloodClient(url, user, pass)
-            "transmission" -> TransmissionClient(url, user, pass)
+        val client = when (tcCfg.type.trim().lowercase()) {
+            "flood" -> FloodClient(tcCfg.url, tcCfg.user, tcCfg.pass)
+            "transmission" -> TransmissionClient(tcCfg.url, tcCfg.user, tcCfg.pass)
             else -> null
         }
         if (client == null)
@@ -65,6 +65,21 @@ data class TorrentConfig(
         return client
     }
 }
+
+@Serializable
+data class TorrentClientConfig(
+    val type: String = "Transmission",
+    val url: String = "",
+    val user: String = "",
+    val pass: String = ""
+)
+
+@Serializable
+data class SABnzbdConfig(
+    val url: String = "",
+    val user: String = "",
+    val pass: String = ""
+)
 
 @Serializable
 data class DbConfig(

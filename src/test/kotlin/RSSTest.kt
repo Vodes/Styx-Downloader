@@ -3,7 +3,7 @@ import moe.styx.common.data.DownloaderTarget
 import moe.styx.common.data.SourceType
 import moe.styx.downloader.parsing.ParseDenyReason
 import moe.styx.downloader.parsing.ParseResult
-import moe.styx.downloader.torrent.RSSHandler
+import moe.styx.downloader.rss.RSSHandler
 import java.util.*
 import kotlin.test.assertTrue
 

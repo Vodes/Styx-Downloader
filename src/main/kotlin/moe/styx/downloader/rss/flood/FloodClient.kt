@@ -1,4 +1,4 @@
-package moe.styx.downloader.torrent.flood
+package moe.styx.downloader.rss.flood
 
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -8,8 +8,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import moe.styx.common.http.httpClient
 import moe.styx.common.json
-import moe.styx.downloader.torrent.Torrent
-import moe.styx.downloader.torrent.TorrentClient
+import moe.styx.downloader.rss.Torrent
+import moe.styx.downloader.rss.TorrentClient
 import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.setGenericJsonBody
 import kotlin.random.Random

@@ -1,4 +1,4 @@
-package moe.styx.downloader.torrent
+package moe.styx.downloader.rss
 
 import com.apptasticsoftware.rssreader.Enclosure
 import com.apptasticsoftware.rssreader.Item
@@ -12,6 +12,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import moe.styx.common.data.DownloadableOption
 import moe.styx.common.data.DownloaderTarget
+import moe.styx.common.data.SourceType
 import moe.styx.common.extension.anyEquals
 import moe.styx.common.extension.eqI
 import moe.styx.common.http.httpClient
@@ -21,13 +22,11 @@ import moe.styx.db.tables.DownloaderTargetsTable
 import moe.styx.downloader.Main
 import moe.styx.downloader.dbClient
 import moe.styx.downloader.episodeWanted
-import moe.styx.downloader.other.handleFile
 import moe.styx.downloader.parsing.ParseDenyReason
 import moe.styx.downloader.parsing.ParseResult
-import moe.styx.downloader.torrent.transmission.TransmissionClient
+import moe.styx.downloader.rss.transmission.TransmissionClient
 import moe.styx.downloader.utils.*
 import org.jetbrains.exposed.sql.selectAll
-import java.io.File
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.time.DurationUnit
@@ -39,19 +38,28 @@ object RSSHandler {
     private val alreadyAdded = mutableListOf<String>()
 
     fun start() {
-        val client = Main.config.torrentConfig.createClient()
+        startTorrents()
+        startUsenet()
+    }
+
+    private fun startUsenet() {
+
+    }
+
+    private fun startTorrents() {
+        val client = Main.config.rssConfig.createTorrentClient()
         if (client == null || !client.authenticate()) {
             Log.e("RSSHandler::start") { "Could not initiate the torrent client." }
             return
         }
-        Log.i { "Starting RSS Handler" }
+        Log.i { "Starting Torrent Handler" }
         torrentClient = client
         val oneMinute = 1.toDuration(DurationUnit.MINUTES)
         launchGlobal {
             delay(30.toDuration(DurationUnit.SECONDS))
             while (true) {
                 val targets = dbClient.transaction { DownloaderTargetsTable.query { selectAll().toList() } }
-                val rssOptions = targets.getRSSOptions()
+                val rssOptions = targets.getRSSOptions(SourceType.TORRENT)
                 for ((feedURL, options) in rssOptions.iterator()) {
                     val results = runCatching { checkFeed(feedURL, options, targets) }.getOrNull() ?: emptyList()
                     for ((item, parseResult) in results.filter { it.second is ParseResult.OK }) {
@@ -62,7 +70,7 @@ object RSSHandler {
                         Log.d("RSSHandler for Feed: $feedURL") { "Downloading: ${item.title}" }
                         val torrent = torrentClient.addTorrentByURL(
                             torrentUrl,
-                            if (result.option.keepSeeding) Main.config.torrentConfig.defaultSeedDir else Main.config.torrentConfig.defaultNonSeedDir
+                            if (result.option.keepSeeding) Main.config.rssConfig.defaultSeedDir else Main.config.rssConfig.defaultNonSeedDir
                         )
                         if (torrent == null) {
                             Log.e("RSSHandler for Feed: $feedURL") { "Could not add torrent with URL: $torrentUrl" }
@@ -80,37 +88,6 @@ object RSSHandler {
                         delay(oneMinute)
                 }
                 delay(12.toDuration(DurationUnit.MINUTES))
-            }
-        }
-        launchThreaded {
-            val tempDir = File(Main.config.torrentConfig.defaultNonSeedDir)
-            val seedDir = File(Main.config.torrentConfig.defaultSeedDir)
-            val copied = mutableListOf<String>()
-            while (true) {
-                val cutOff = Clock.System.now().toEpochMilliseconds() - 30000
-                val targets = dbClient.transaction { DownloaderTargetsTable.query { selectAll().toList() } }
-                if (tempDir.exists() && tempDir.isDirectory) {
-                    (tempDir.listFiles()?.filter { it.isFile && it.lastModified() < cutOff } ?: emptyList<File>()).forEach {
-                        val parseResult = targets.episodeWanted(it.name)
-                        if (parseResult !is ParseResult.OK)
-                            return@forEach
-                        handleFile(it, parseResult.target, parseResult.option)
-                    }
-                }
-                if (seedDir.exists() && seedDir.isDirectory) {
-                    (seedDir.listFiles()?.filter { it.isFile && it.lastModified() < cutOff } ?: emptyList<File>()).forEach {
-                        val parseResult = targets.episodeWanted(it.name)
-                        if (parseResult !is ParseResult.OK || copied.anyEquals(it.name))
-                            return@forEach
-                        val copy = it.copyTo(File(seedDir.parentFile, it.name), overwrite = true)
-                        copied.add(it.name)
-                        if (handleFile(copy, parseResult.target, parseResult.option))
-                            copy.delete()
-                    }
-                }
-                if (copied.size > 30)
-                    copied.clear()
-                delay(10000)
             }
         }
     }
@@ -204,6 +181,14 @@ data class FeedItem(
             RegexCollection.generalURLRegex.matchEntire(guid)?.groups?.get(0)?.value ?: ""
         else
             this.link
+    }
+
+    fun getNZBURL(): String {
+        val nzbEnclosure = enclosures.find { it.type.contains("x-nzb", true) }
+        return if (nzbEnclosure != null) {
+            nzbEnclosure.url
+        } else
+            link
     }
 
     fun getTorrentURL(): String {

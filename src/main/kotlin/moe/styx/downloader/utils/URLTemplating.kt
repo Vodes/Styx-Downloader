@@ -5,7 +5,7 @@ import moe.styx.downloader.Main
 fun resolveTemplate(input: String): Pair<String, String> {
     var inputProxy = input
     var templatedURI = input
-    for ((name, uri) in Main.config.torrentConfig.feedTemplates) {
+    for ((name, uri) in Main.config.rssConfig.feedTemplates) {
         if (input.contains("%$name%", true)) {
             templatedURI = uri
             inputProxy = inputProxy.replace("%$name%", "", true)

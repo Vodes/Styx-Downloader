@@ -11,7 +11,8 @@ import moe.styx.downloader.ftp.FTPHandler
 import moe.styx.downloader.other.IRCClient
 import moe.styx.downloader.other.MetadataFetcher
 import moe.styx.downloader.other.startBot
-import moe.styx.downloader.torrent.RSSHandler
+import moe.styx.downloader.rss.RSSHandler
+import moe.styx.downloader.rss.startCheckingLocal
 import net.peanuuutz.tomlkt.Toml
 import java.io.File
 import kotlin.system.exitProcess
@@ -59,8 +60,10 @@ fun main(args: Array<String>) {
     MetadataFetcher.start()
     startBot()
     FTPHandler.start()
-    if (Main.config.torrentConfig.defaultSeedDir.isNotBlank() && Main.config.torrentConfig.defaultNonSeedDir.isNotBlank())
+    if (Main.config.rssConfig.defaultSeedDir.isNotBlank() && Main.config.rssConfig.defaultNonSeedDir.isNotBlank()) {
         RSSHandler.start()
+        startCheckingLocal()
+    }
 
     Main.config.ircConfig.servers.forEach { (server, channels) ->
         launchGlobal {

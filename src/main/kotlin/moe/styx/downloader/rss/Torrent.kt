@@ -1,4 +1,4 @@
-package moe.styx.downloader.torrent
+package moe.styx.downloader.rss
 
 import io.ktor.client.statement.*
 import io.ktor.http.*

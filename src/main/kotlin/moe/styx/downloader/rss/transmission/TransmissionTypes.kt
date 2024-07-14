@@ -1,4 +1,4 @@
-package moe.styx.downloader.torrent.transmission
+package moe.styx.downloader.rss.transmission
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
