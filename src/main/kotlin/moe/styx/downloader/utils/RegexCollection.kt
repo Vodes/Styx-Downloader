@@ -17,6 +17,7 @@ object RegexCollection {
 
     val xdccAnnounceRegex = "\\/msg (?<user>.+?) xdcc send #?(?<num>\\d+)".toRegex(RegexOption.IGNORE_CASE)
     val repackRegex = "(?:\\.| )REPACK(?<num>\\d+)?(?:\\.| )".toRegex(RegexOption.IGNORE_CASE)
+    val stupidKeyRegex = "(?<sep>\\?|&)(?<key>(?:api|apikey|r|passkey|user)=\\w+&?)".toRegex(RegexOption.IGNORE_CASE)
 
     val ftpConnectionStringRegex =
         "(?<connection>ftpe?s?):\\/\\/(?:(?<user>.+):(?<pass>.+)@)?(?<host>(?:[a-zA-Z0-9]+\\.?)+)(?::(?<port>\\d+))?(?<path>\\/.+)?"

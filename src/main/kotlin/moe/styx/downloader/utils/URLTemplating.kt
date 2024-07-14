@@ -14,3 +14,18 @@ fun resolveTemplate(input: String): Pair<String, String> {
     }
     return templatedURI to inputProxy.trim()
 }
+
+fun removeKeysFromURL(url: String): String {
+    var cleaned = url
+    var match: MatchResult?
+
+    while (RegexCollection.stupidKeyRegex.find(cleaned).also { match = it } != null) {
+        if (match!!.groups["sep"]?.value == "?") {
+            match!!.groups["key"]?.value?.let {
+                cleaned = cleaned.replace(it, "", true)
+            }
+        } else
+            cleaned = cleaned.replace(match!!.groups[0]!!.value, "", true)
+    }
+    return cleaned
+}

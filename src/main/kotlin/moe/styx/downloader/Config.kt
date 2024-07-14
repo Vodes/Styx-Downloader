@@ -4,6 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import moe.styx.downloader.rss.TorrentClient
 import moe.styx.downloader.rss.flood.FloodClient
+import moe.styx.downloader.rss.sabnzb.SABnzbdClient
 import moe.styx.downloader.rss.transmission.TransmissionClient
 import moe.styx.downloader.utils.Log
 import net.peanuuutz.tomlkt.TomlComment
@@ -42,6 +43,7 @@ data class RSSConfig(
         """
         Do not include a query string in templates if you want to use dynamic queries in the webui!
         You can use them with %example%.
+        '%example%my hero academia' would result in 'https://feed.animetosho.org/rss2?q=my+hero+academia'
         """
     )
     val feedTemplates: Map<String, String> = mapOf("example" to "https://feed.animetosho.org/rss2"),
@@ -52,7 +54,7 @@ data class RSSConfig(
 ) {
     fun createTorrentClient(): TorrentClient? {
         if (tcCfg.url.isBlank() || tcCfg.user.isBlank() || tcCfg.pass.isBlank()) {
-            Log.e { "No valid URL or login data was found in the torrent config." }
+            Log.e { "No valid URL or login data were found in the torrent config." }
             return null
         }
         val client = when (tcCfg.type.trim().lowercase()) {
@@ -63,6 +65,14 @@ data class RSSConfig(
         if (client == null)
             Log.e { "Unknown TorrentClient type!" }
         return client
+    }
+
+    fun createSAB(): SABnzbdClient? {
+        if (sabCfg.url.isBlank() || sabCfg.apikey.isBlank()) {
+            Log.e { "No valid URL or apikey were found in the SABnzbd config." }
+            return null
+        }
+        return SABnzbdClient(sabCfg.url, sabCfg.apikey)
     }
 }
 
@@ -77,8 +87,7 @@ data class TorrentClientConfig(
 @Serializable
 data class SABnzbdConfig(
     val url: String = "",
-    val user: String = "",
-    val pass: String = ""
+    val apikey: String = "",
 )
 
 @Serializable

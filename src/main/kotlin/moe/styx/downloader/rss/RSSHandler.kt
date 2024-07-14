@@ -36,6 +36,7 @@ object RSSHandler {
     private lateinit var torrentClient: TorrentClient
     private val reader = RssReader()
     private val alreadyAdded = mutableListOf<String>()
+    val oneMinute = 1.toDuration(DurationUnit.MINUTES)
 
     fun start() {
         startTorrents()
@@ -43,7 +44,42 @@ object RSSHandler {
     }
 
     private fun startUsenet() {
-
+        val client = Main.config.rssConfig.createSAB()
+        if (client == null || !client.authenticate()) {
+            Log.e("RSSHandler::start") { "Could not initiate the SABnzbd client." }
+            return
+        }
+        Log.i { "Starting Usenet Handler" }
+        launchGlobal {
+            delay(15.toDuration(DurationUnit.SECONDS))
+            while (true) {
+                val targets = dbClient.transaction { DownloaderTargetsTable.query { selectAll().toList() } }
+                val rssOptions = targets.getRSSOptions(SourceType.USENET)
+                for ((feedURL, options) in rssOptions.iterator()) {
+                    val urlNoKeys = removeKeysFromURL(feedURL)
+                    val results = runCatching { checkFeed(feedURL, options, targets) }.getOrNull() ?: emptyList()
+                    for ((item, _) in results.filter { it.second is ParseResult.OK }) {
+                        val nzbUrl = item.getNZBURL()
+                        if (nzbUrl == null || alreadyAdded.anyEquals(nzbUrl))
+                            continue
+                        Log.d("RSSHandler for Feed: $urlNoKeys") { "Downloading: ${item.title}" }
+                        val added = client.addNZBByURL(nzbUrl)
+                        if (!added) {
+                            Log.e("RSSHandler for Feed: $urlNoKeys") { "Could not add NZB with URL: ${removeKeysFromURL(nzbUrl)}\nPost: ${item.getPostURL()}" }
+                            delay(oneMinute)
+                            continue
+                        }
+                        alreadyAdded.add(nzbUrl)
+                        delay(8000)
+                    }
+                    if (feedURL.contains("animetosho"))
+                        delay(10000)
+                    else
+                        delay(oneMinute)
+                }
+                delay(8.toDuration(DurationUnit.MINUTES))
+            }
+        }
     }
 
     private fun startTorrents() {
@@ -54,26 +90,26 @@ object RSSHandler {
         }
         Log.i { "Starting Torrent Handler" }
         torrentClient = client
-        val oneMinute = 1.toDuration(DurationUnit.MINUTES)
         launchGlobal {
             delay(30.toDuration(DurationUnit.SECONDS))
             while (true) {
                 val targets = dbClient.transaction { DownloaderTargetsTable.query { selectAll().toList() } }
                 val rssOptions = targets.getRSSOptions(SourceType.TORRENT)
                 for ((feedURL, options) in rssOptions.iterator()) {
+                    val urlNoKeys = removeKeysFromURL(feedURL)
                     val results = runCatching { checkFeed(feedURL, options, targets) }.getOrNull() ?: emptyList()
                     for ((item, parseResult) in results.filter { it.second is ParseResult.OK }) {
                         val result = parseResult as ParseResult.OK
                         val torrentUrl = item.getTorrentURL()
                         if (alreadyAdded.anyEquals(torrentUrl))
                             continue
-                        Log.d("RSSHandler for Feed: $feedURL") { "Downloading: ${item.title}" }
+                        Log.d("RSSHandler for Feed: $urlNoKeys") { "Downloading: ${item.title}" }
                         val torrent = torrentClient.addTorrentByURL(
                             torrentUrl,
                             if (result.option.keepSeeding) Main.config.rssConfig.defaultSeedDir else Main.config.rssConfig.defaultNonSeedDir
                         )
                         if (torrent == null) {
-                            Log.e("RSSHandler for Feed: $feedURL") { "Could not add torrent with URL: $torrentUrl" }
+                            Log.e("RSSHandler for Feed: $urlNoKeys") { "Could not add torrent with URL: ${removeKeysFromURL(torrentUrl)}\nPost: ${item.getPostURL()}" }
                             delay(oneMinute)
                             continue
                         }
@@ -183,12 +219,9 @@ data class FeedItem(
             this.link
     }
 
-    fun getNZBURL(): String {
+    fun getNZBURL(): String? {
         val nzbEnclosure = enclosures.find { it.type.contains("x-nzb", true) }
-        return if (nzbEnclosure != null) {
-            nzbEnclosure.url
-        } else
-            link
+        return nzbEnclosure?.url
     }
 
     fun getTorrentURL(): String {
