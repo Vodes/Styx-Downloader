@@ -13,6 +13,9 @@ enum class ParseDenyReason {
     FileIsTooNew,
     IsSpecialOrFiller,
     DatabaseConnectionFailed,
+
+    NZBNotFound,
+    TorrentNotFound
 }
 
 sealed class ParseResult {

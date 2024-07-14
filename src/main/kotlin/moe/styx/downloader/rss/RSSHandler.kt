@@ -153,10 +153,16 @@ object RSSHandler {
             val results = mutableListOf<Pair<FeedItem, ParseResult>>()
             for (option in options) {
                 val parent = option parentIn targets
-                val filtered = items.filter { it.getTorrentURL().isNotBlank() }
-                for (item in filtered) {
+                for (item in items) {
                     if (!option.ignoreDelay && item.getUnixPubTime() < (Clock.System.now().epochSeconds - 1800000)) {
                         results.add(item to ParseResult.DENIED(ParseDenyReason.PostIsTooOld))
+                        continue
+                    }
+                    if (option.source == SourceType.USENET && item.getNZBURL().isNullOrBlank()) {
+                        results.add(item to ParseResult.FAILED(ParseDenyReason.NZBNotFound))
+                        continue
+                    } else if (option.source == SourceType.TORRENT && item.getTorrentURL().isBlank()) {
+                        results.add(item to ParseResult.FAILED(ParseDenyReason.TorrentNotFound))
                         continue
                     }
                     var titleToCheck = item.title
