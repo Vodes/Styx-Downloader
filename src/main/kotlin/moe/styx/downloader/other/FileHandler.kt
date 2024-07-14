@@ -43,7 +43,7 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
     val muxDir = File(Main.appDir, "Muxing")
     muxDir.mkdirs()
 
-    val output = File(outDir, outname)
+    var output = File(outDir, outname)
     val previous = dbClient.transaction { MediaEntryTable.query { selectAll().where { mediaID eq media.GUID }.toList() } }
         .find { it.entryNumber.toDoubleOrNull() == episodeWithOffset.toDoubleOrNull() }
     if (option.processingOptions != null && option.processingOptions!!.needsMuxtools()) {
@@ -104,6 +104,17 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
         ProcessBuilder(commands).redirectOutput(ProcessBuilder.Redirect.DISCARD).start().waitFor()
     }
 
+    val mediaInfoResult = output.getMediaInfo()
+
+    if (output.name.containsAny("%jp%, %res%")) {
+        val resolution = mediaInfoResult?.tracks?.find { it.type eqI "video" }?.let { it.height ?: "1080" } ?: "1080"
+        val jpCodec = mediaInfoResult?.tracks?.find { it.type eqI "audio" && it.language.equalsAny("ja", "jpn") }?.format ?: "AAC"
+        val newName = output.name.replace("%res%", "${resolution}p", true).replace("%jp%", jpCodec, true)
+        val newFile = File(output.parentFile, newName)
+        if (output.renameTo(newFile))
+            output = newFile
+    }
+
     if (previous != null) {
         val previousFile = File(previous.filePath)
         if (previousFile.exists() && previousFile != output)
@@ -133,7 +144,6 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
         return false
     }
     dbClient.transaction {
-        val mediaInfoResult = output.getMediaInfo()
         if (mediaInfoResult != null) {
             MediaInfoTable.upsertItem(
                 MediaInfo(

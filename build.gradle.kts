@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "moe.styx"
-version = "0.3.0-SNAPSHOT3"
+version = "0.3.0-SNAPSHOT4"
 
 repositories {
     mavenCentral()
