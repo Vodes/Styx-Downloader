@@ -18,10 +18,9 @@ fun startCheckingLocal() = launchThreaded {
     val seedDir = File(Main.config.rssConfig.defaultSeedDir)
     val copied = mutableListOf<String>()
     while (true) {
-        val cutOff = Clock.System.now().toEpochMilliseconds() - 30000
         val targets = dbClient.transaction { DownloaderTargetsTable.query { selectAll().toList() } }
         if (tempDir.exists() && tempDir.isDirectory) {
-            (tempDir.listFiles()?.filter { it.isFile && it.lastModified() < cutOff } ?: emptyList<File>()).forEach {
+            listFiles(tempDir).forEach {
                 val parseResult = targets.episodeWanted(it.name)
                 if (parseResult !is ParseResult.OK)
                     return@forEach
@@ -29,7 +28,7 @@ fun startCheckingLocal() = launchThreaded {
             }
         }
         if (seedDir.exists() && seedDir.isDirectory) {
-            (seedDir.listFiles()?.filter { it.isFile && it.lastModified() < cutOff } ?: emptyList<File>()).forEach {
+            listFiles(seedDir).forEach {
                 val parseResult = targets.episodeWanted(it.name)
                 if (parseResult !is ParseResult.OK || copied.anyEquals(it.name))
                     return@forEach
@@ -43,4 +42,9 @@ fun startCheckingLocal() = launchThreaded {
             copied.clear()
         delay(10000)
     }
+}
+
+fun listFiles(dir: File): List<File> {
+    val cutOff = Clock.System.now().toEpochMilliseconds() - 30000
+    return dir.walk().maxDepth(2).filter { it.isFile && it.lastModified() < cutOff }.toSortedSet().toList()
 }
