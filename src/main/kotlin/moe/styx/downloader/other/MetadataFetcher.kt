@@ -16,8 +16,8 @@ import moe.styx.common.util.launchGlobal
 import moe.styx.db.tables.ChangesTable
 import moe.styx.db.tables.MediaEntryTable
 import moe.styx.db.tables.MediaTable
-import moe.styx.downloader.Main
 import moe.styx.downloader.dbClient
+import moe.styx.downloader.downloaderConfig
 import moe.styx.downloader.getAppDir
 import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.getRemoteEpisodes
@@ -44,7 +44,7 @@ object MetadataFetcher {
     private fun save() = entryFile.writeText(json.encodeToString(entries))
 
     fun start() = launchGlobal {
-        if (Main.config.tmdbToken.isBlank())
+        if (downloaderConfig.tmdbToken.isBlank())
             return@launchGlobal
         Log.i { "Starting Metadatafetcher" }
         if (entryFile.exists()) {

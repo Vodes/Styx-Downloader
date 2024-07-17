@@ -19,7 +19,7 @@ fun DownloadableOption.episodeWanted(toMatch: String, parent: DownloaderTarget, 
         return ParseResult.FAILED(ParseDenyReason.NoOptionMatched)
     }
     // Ignore stuff like "One Piece - Egghead SP1" or "One Piece E1078.5"
-    if (Main.config.ignoreSpecialsAndPoint5) {
+    if (downloaderConfig.ignoreSpecialsAndPoint5) {
         val matches = RegexCollection.specialEpisodeRegex.findAll(toMatch)
         for (match in matches) {
             val group = match.groups["num"]?.value ?: continue
@@ -33,7 +33,7 @@ fun DownloadableOption.episodeWanted(toMatch: String, parent: DownloaderTarget, 
         ?: return ParseResult.FAILED(ParseDenyReason.InvalidEpisodeNumber)
 
     // Another specials check, just to be safe
-    if (Main.config.ignoreSpecialsAndPoint5 && episode.toIntOrNull() == null)
+    if (downloaderConfig.ignoreSpecialsAndPoint5 && episode.toIntOrNull() == null)
         return ParseResult.DENIED(ParseDenyReason.IsSpecialOrFiller)
 
     // Check if we already have the episode in the database

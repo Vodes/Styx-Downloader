@@ -9,6 +9,7 @@ import moe.styx.common.util.launchGlobal
 import moe.styx.db.tables.DownloaderTargetsTable
 import moe.styx.downloader.Main
 import moe.styx.downloader.dbClient
+import moe.styx.downloader.downloaderConfig
 import moe.styx.downloader.episodeWanted
 import moe.styx.downloader.other.handleFile
 import moe.styx.downloader.parsing.ParseDenyReason
@@ -26,7 +27,7 @@ object FTPHandler {
     lateinit var defaultFTPClient: FTPClient
 
     fun initClient(): Boolean {
-        runCatching { defaultFTPClient = FTPClient.fromConnectionString(Main.config.defaultFTPConnectionString) }
+        runCatching { defaultFTPClient = FTPClient.fromConnectionString(downloaderConfig.defaultFTPConnectionString) }
             .onFailure {
                 Log.e("FTPHandler::start") { "Could not initialize default FTPClient." }
                 return false

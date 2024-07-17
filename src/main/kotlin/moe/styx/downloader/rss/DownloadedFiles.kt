@@ -5,8 +5,8 @@ import kotlinx.datetime.Clock
 import moe.styx.common.extension.anyEquals
 import moe.styx.common.util.launchThreaded
 import moe.styx.db.tables.DownloaderTargetsTable
-import moe.styx.downloader.Main
 import moe.styx.downloader.dbClient
+import moe.styx.downloader.downloaderConfig
 import moe.styx.downloader.episodeWanted
 import moe.styx.downloader.other.handleFile
 import moe.styx.downloader.parsing.ParseResult
@@ -14,8 +14,8 @@ import org.jetbrains.exposed.sql.selectAll
 import java.io.File
 
 fun startCheckingLocal() = launchThreaded {
-    val tempDir = File(Main.config.rssConfig.defaultNonSeedDir)
-    val seedDir = File(Main.config.rssConfig.defaultSeedDir)
+    val tempDir = File(downloaderConfig.rssConfig.defaultNonSeedDir)
+    val seedDir = File(downloaderConfig.rssConfig.defaultSeedDir)
     val copied = mutableListOf<String>()
     while (true) {
         val targets = dbClient.transaction { DownloaderTargetsTable.query { selectAll().toList() } }

@@ -9,12 +9,12 @@ import moe.styx.common.data.tmdb.TmdbMeta
 import moe.styx.common.data.tmdb.TmdbSeason
 import moe.styx.common.http.httpClient
 import moe.styx.common.json
-import moe.styx.downloader.Main
+import moe.styx.downloader.downloaderConfig
 
 suspend inline fun <reified T> genericTmdbGet(url: String): T? {
     val response = httpClient.get(url) {
         accept(ContentType.Application.Json)
-        bearerAuth(Main.config.tmdbToken)
+        bearerAuth(downloaderConfig.tmdbToken)
         userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36")
     }
 

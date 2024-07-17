@@ -15,8 +15,8 @@ import moe.styx.common.extension.toBoolean
 import moe.styx.common.http.httpClient
 import moe.styx.common.util.launchGlobal
 import moe.styx.db.tables.*
-import moe.styx.downloader.Main
 import moe.styx.downloader.dbClient
+import moe.styx.downloader.downloaderConfig
 import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.getTargetTime
 import moe.styx.downloader.utils.getURL
@@ -38,9 +38,9 @@ import kotlin.time.toDuration
 private lateinit var bot: DiscordApi
 
 fun startBot() {
-    bot = DiscordApiBuilder().setToken(Main.config.discordBot.token).setAllIntents().login().join()
+    bot = DiscordApiBuilder().setToken(downloaderConfig.discordBot.token).setAllIntents().login().join()
 
-    if (Main.config.discordBot.scheduleMessage.isBlank())
+    if (downloaderConfig.discordBot.scheduleMessage.isBlank())
         return
 
     launchGlobal {
@@ -74,7 +74,7 @@ fun startBot() {
                         )
                     }
                 }
-                val message = bot.getMessageByLink(Main.config.discordBot.scheduleMessage).get().join()
+                val message = bot.getMessageByLink(downloaderConfig.discordBot.scheduleMessage).get().join()
                 message.edit("", embed)
             }.onFailure { it.printStackTrace() }
 
@@ -84,7 +84,7 @@ fun startBot() {
 }
 
 fun notifyDiscord(entry: MediaEntry, media: Media) {
-    if (!Main.config.discordBot.isValid())
+    if (!downloaderConfig.discordBot.isValid())
         return
     if (media.thumbID.isNullOrBlank())
         return
@@ -93,10 +93,10 @@ fun notifyDiscord(entry: MediaEntry, media: Media) {
     checkAndRemoveSchedule(media, entry)
 
     runCatching {
-        val server = bot.getServerById(Main.config.discordBot.announceServer).getOrNull() ?: return@runCatching
-        val channel = server.getTextChannelById(Main.config.discordBot.announceChannel).getOrNull() ?: return@runCatching
-        val pingRole = server.getRoleById(Main.config.discordBot.pingRole).getOrNull()
-        val dmRole = server.getRoleById(Main.config.discordBot.dmRole).getOrNull()
+        val server = bot.getServerById(downloaderConfig.discordBot.announceServer).getOrNull() ?: return@runCatching
+        val channel = server.getTextChannelById(downloaderConfig.discordBot.announceChannel).getOrNull() ?: return@runCatching
+        val pingRole = server.getRoleById(downloaderConfig.discordBot.pingRole).getOrNull()
+        val dmRole = server.getRoleById(downloaderConfig.discordBot.dmRole).getOrNull()
 
         if (!channel.canYouWrite()) {
             Log.e { "Discord announce channel is not writeable!" }
@@ -111,7 +111,7 @@ fun notifyDiscord(entry: MediaEntry, media: Media) {
             .filterValues { it != null }
 
         val embed = EmbedBuilder()
-            .setAuthor("Styx", Main.config.siteBaseUrl, "${Main.config.imageBaseUrl}/website/icon.png")
+            .setAuthor("Styx", downloaderConfig.siteBaseUrl, "${downloaderConfig.imageBaseUrl}/website/icon.png")
             .setThumbnail(thumb.getURL())
             .setTitle("New episode")
             .setDescription("${media.name} - ${entry.entryNumber}")

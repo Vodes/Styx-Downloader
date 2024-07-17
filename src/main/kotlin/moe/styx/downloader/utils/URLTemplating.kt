@@ -1,11 +1,11 @@
 package moe.styx.downloader.utils
 
-import moe.styx.downloader.Main
+import moe.styx.downloader.downloaderConfig
 
 fun resolveTemplate(input: String): Pair<String, String> {
     var inputProxy = input
     var templatedURI = input
-    for ((name, uri) in Main.config.rssConfig.feedTemplates) {
+    for ((name, uri) in downloaderConfig.rssConfig.feedTemplates) {
         if (input.contains("%$name%", true)) {
             templatedURI = uri
             inputProxy = inputProxy.replace("%$name%", "", true)

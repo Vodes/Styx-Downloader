@@ -5,7 +5,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 import moe.styx.common.http.httpClient
-import moe.styx.downloader.Main
+import moe.styx.downloader.downloaderConfig
 import moe.styx.downloader.utils.Log
 
 class SABnzbdClient(private var url: String, val apiKey: String) {
@@ -26,7 +26,7 @@ class SABnzbdClient(private var url: String, val apiKey: String) {
                 parameters.append("mode", "set_config")
                 parameters.append("section", "categories")
                 parameters.append("name", "styx")
-                parameters.append("dir", Main.config.rssConfig.defaultNonSeedDir)
+                parameters.append("dir", downloaderConfig.rssConfig.defaultNonSeedDir)
             }
         }
         val result = response.status.isSuccess()

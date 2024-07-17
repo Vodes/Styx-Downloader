@@ -10,6 +10,7 @@ import moe.styx.common.http.httpClient
 import moe.styx.db.tables.DownloaderTargetsTable
 import moe.styx.downloader.Main
 import moe.styx.downloader.dbClient
+import moe.styx.downloader.downloaderConfig
 import moe.styx.downloader.episodeWanted
 import moe.styx.downloader.parsing.ParseResult
 import moe.styx.downloader.utils.Log
@@ -61,7 +62,7 @@ class IRCClient(private val server: String, private val channels: List<String>) 
     }
 
     override fun onIncomingFileTransfer(transfer: DccFileTransfer) {
-        if (Main.config.ircConfig.whitelistedXDCCBots.find { it eqI transfer.nick } == null) {
+        if (downloaderConfig.ircConfig.whitelistedXDCCBots.find { it eqI transfer.nick } == null) {
             Log.d(logSource) { "Blocked incoming transfer from unknown user '${transfer.nick}'" }
             transfer.close()
             return
@@ -103,7 +104,7 @@ class IRCClient(private val server: String, private val channels: List<String>) 
 
     override fun onPrivateMessage(sender: String, login: String, hostname: String, message: String) {
         super.onPrivateMessage(sender, login, hostname, message)
-        if (Main.config.ircConfig.whitelistedXDCCBots.find { it eqI sender } == null) {
+        if (downloaderConfig.ircConfig.whitelistedXDCCBots.find { it eqI sender } == null) {
             return
         }
         handleMessage(message, sender)
@@ -111,7 +112,7 @@ class IRCClient(private val server: String, private val channels: List<String>) 
 
     override fun onMessage(channel: String, sender: String, login: String, hostname: String, message: String) {
         super.onMessage(channel, sender, login, hostname, message)
-        if (Main.config.ircConfig.whitelistedXDCCBots.find { it eqI sender } == null) {
+        if (downloaderConfig.ircConfig.whitelistedXDCCBots.find { it eqI sender } == null) {
             return
         }
         handleMessage(message, sender)

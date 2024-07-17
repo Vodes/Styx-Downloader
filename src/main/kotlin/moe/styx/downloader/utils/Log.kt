@@ -6,7 +6,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import moe.styx.common.extension.formattedStr
-import moe.styx.downloader.Main
+import moe.styx.downloader.downloaderConfig
 
 object Log {
 
@@ -23,7 +23,7 @@ object Log {
     }
 
     fun d(source: String? = null, message: () -> String) {
-        if (!Main.config.debug)
+        if (!downloaderConfig.debug)
             return
         printMsg(message(), "D", source, prefixColor = TextColors.brightGreen)
     }

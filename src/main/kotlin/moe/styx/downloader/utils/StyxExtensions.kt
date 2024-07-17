@@ -3,7 +3,7 @@ package moe.styx.downloader.utils
 import moe.styx.common.data.*
 import moe.styx.common.data.tmdb.TmdbEpisode
 import moe.styx.common.extension.toBoolean
-import moe.styx.downloader.Main
+import moe.styx.downloader.downloaderConfig
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -70,11 +70,11 @@ fun ProcessingOptions.needsMuxtools(): Boolean {
 
 fun Image.getURL(): String {
     return if (hasWEBP?.toBoolean() == true) {
-        "${Main.config.imageBaseUrl}/$GUID.webp"
+        "${downloaderConfig.imageBaseUrl}/$GUID.webp"
     } else if (hasJPG?.toBoolean() == true) {
-        "${Main.config.imageBaseUrl}/$GUID.jpg"
+        "${downloaderConfig.imageBaseUrl}/$GUID.jpg"
     } else if (hasPNG?.toBoolean() == true) {
-        "${Main.config.imageBaseUrl}/$GUID.png"
+        "${downloaderConfig.imageBaseUrl}/$GUID.png"
     } else {
         return externalURL as String
     }

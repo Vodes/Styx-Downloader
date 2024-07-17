@@ -19,8 +19,8 @@ import moe.styx.common.http.httpClient
 import moe.styx.common.util.launchGlobal
 import moe.styx.common.util.launchThreaded
 import moe.styx.db.tables.DownloaderTargetsTable
-import moe.styx.downloader.Main
 import moe.styx.downloader.dbClient
+import moe.styx.downloader.downloaderConfig
 import moe.styx.downloader.episodeWanted
 import moe.styx.downloader.parsing.ParseDenyReason
 import moe.styx.downloader.parsing.ParseResult
@@ -44,7 +44,7 @@ object RSSHandler {
     }
 
     private fun startUsenet() {
-        val client = Main.config.rssConfig.createSAB()
+        val client = downloaderConfig.rssConfig.createSAB()
         if (client == null || !client.authenticate()) {
             Log.e("RSSHandler::start") { "Could not initiate the SABnzbd client." }
             return
@@ -83,7 +83,7 @@ object RSSHandler {
     }
 
     private fun startTorrents() {
-        val client = Main.config.rssConfig.createTorrentClient()
+        val client = downloaderConfig.rssConfig.createTorrentClient()
         if (client == null || !client.authenticate()) {
             Log.e("RSSHandler::start") { "Could not initiate the torrent client." }
             return
@@ -106,7 +106,7 @@ object RSSHandler {
                         Log.d("RSSHandler for Feed: $urlNoKeys") { "Downloading: ${item.title}" }
                         val torrent = torrentClient.addTorrentByURL(
                             torrentUrl,
-                            if (result.option.keepSeeding) Main.config.rssConfig.defaultSeedDir else Main.config.rssConfig.defaultNonSeedDir
+                            if (result.option.keepSeeding) downloaderConfig.rssConfig.defaultSeedDir else downloaderConfig.rssConfig.defaultNonSeedDir
                         )
                         if (torrent == null) {
                             Log.e("RSSHandler for Feed: $urlNoKeys") { "Could not add torrent with URL: ${removeKeysFromURL(torrentUrl)}\nPost: ${item.getPostURL()}" }
