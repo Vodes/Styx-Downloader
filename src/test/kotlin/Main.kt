@@ -1,9 +1,9 @@
-import moe.styx.downloader.loadConfig
+import moe.styx.downloader.downloaderConfig
 import moe.styx.downloader.utils.removeKeysFromURL
 import kotlin.test.assertEquals
 
 fun main() {
-    loadConfig()
+    run { downloaderConfig }
     assertEquals(
         "https://animetosho.org/api?t=tvsearch",
         removeKeysFromURL("https://animetosho.org/api?t=tvsearch&apikey=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"),

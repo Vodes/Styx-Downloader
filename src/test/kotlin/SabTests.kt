@@ -19,8 +19,8 @@ object SabTests {
         )
         assertTrue("Could not authenticate SABnzbd client!") { client.authenticate() }
 
-        val nzbURL = test.find { it.first.getNZBURL() != null }?.first?.getNZBURL()
+        val nzbURL = test.findLast { it.first.getNZBURL() != null }?.first?.getNZBURL()
         assertNotNull(nzbURL, "Could not find entry with valid NZB enclosure!")
-        assertTrue("Could not add NZB to SABnzbd!") { client.addNZBByURL(nzbURL) }
+        assertTrue("Could not add NZB to SABnzbd!") { client.downloadAndAddNZB(nzbURL) }
     }
 }

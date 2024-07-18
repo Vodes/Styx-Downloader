@@ -17,3 +17,12 @@ inline fun HttpRequestBuilder.setGenericJsonBody(builder: JsonObjectBuilder.() -
     this.contentType(ContentType.Application.Json)
     this.setBody(json.encodeToString(jsonObj))
 }
+
+fun extractFilename(contentDisposition: String?): String {
+    return runCatching {
+        val startIndex = contentDisposition!!.indexOf("filename=")
+        val startQuoteIndex = contentDisposition.indexOf('"', startIndex)
+        val endQuoteIndex = contentDisposition.indexOf('"', startQuoteIndex + 1)
+        contentDisposition.substring(startQuoteIndex + 1, endQuoteIndex)
+    }.getOrNull() ?: ""
+}
