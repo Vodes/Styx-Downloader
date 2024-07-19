@@ -1,9 +1,13 @@
-FROM azul/zulu-openjdk-alpine:17-latest as runner
+FROM azul/zulu-openjdk-alpine:21 as BUILD
 
-RUN apk add gradle
-
+COPY . /app/
 WORKDIR /app
 
-COPY . .
+RUN ./gradlew clean shadow-ci
 
-ENTRYPOINT ["gradle run"]
+FROM azul/zulu-openjdk-alpine:21-jre
+
+COPY --from=BUILD /app/app.jar /app
+WORKDIR /app
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

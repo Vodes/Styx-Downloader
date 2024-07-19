@@ -115,6 +115,8 @@ fun getAppDir(): File {
         val dir = File(mainDir, "Downloader")
         dir.mkdirs()
         dir
+    } else if (File("/.dockerenv").exists()) {
+        File("/config").also { it.mkdirs() }
     } else {
         val configDir = File(System.getProperty("user.home"), ".config")
         val mainDir = File(configDir, "Styx")

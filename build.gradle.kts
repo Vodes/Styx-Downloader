@@ -57,6 +57,14 @@ java {
     withJavadocJar()
 }
 
+tasks.register("shadow-ci") {
+    dependsOn("shadowJar")
+    doLast {
+        val buildDir = File(projectDir, "build")
+        buildDir.walk().find { it.extension == "jar" && it.name.contains("-all") }?.renameTo(File(projectDir, "app.jar"))
+    }
+}
+
 publishing {
     repositories {
         maven {
