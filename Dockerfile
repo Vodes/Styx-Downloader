@@ -7,7 +7,6 @@ RUN ./gradlew clean shadow-ci
 
 FROM azul/zulu-openjdk-alpine:21-jre
 
-COPY --from=BUILD /app/app.jar /app
-WORKDIR /app
+COPY --from=BUILD /app/app.jar .
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
