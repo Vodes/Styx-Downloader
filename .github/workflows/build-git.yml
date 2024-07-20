@@ -12,6 +12,28 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: "Setup JDK"
+        id: java
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+      - name: "Build shadowJar"
+        env:
+          JAVA_HOME: ${{ steps.java.outputs.path }}
+        run: |
+          chmod u+x ./gradlew
+          ./gradlew clean shadow-ci
+      - name: Upload shadowJar artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: "executable-jar"
+          path: build/libs/*-all.jar
+      - name: "Clean gradlew"
+        env:
+          JAVA_HOME: ${{ steps.java.outputs.path }}
+        run: ./gradlew clean
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Login to Docker Hub
@@ -22,7 +44,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          platforms: linux/amd64
+          context: "."
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ vars.DOCKER_USER }}/styx-dl:git
       - name: "Update description"
