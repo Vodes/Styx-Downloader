@@ -38,6 +38,9 @@ import kotlin.time.toDuration
 private lateinit var bot: DiscordApi
 
 fun startBot() {
+    if (!downloaderConfig.discordBot.isValid())
+        return
+    
     bot = DiscordApiBuilder().setToken(downloaderConfig.discordBot.token).setAllIntents().login().join()
 
     if (downloaderConfig.discordBot.scheduleMessage.isBlank())
