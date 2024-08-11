@@ -106,7 +106,7 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
 
     val mediaInfoResult = output.getMediaInfo()
 
-    if (output.name.containsAny("%jp%, %res%")) {
+    if (output.name.containsAny("%jp%", "%res%")) {
         val resolution = mediaInfoResult?.tracks?.find { it.type eqI "video" }?.let { it.height ?: "1080" } ?: "1080"
         val jpCodec = mediaInfoResult?.tracks?.find { it.type eqI "audio" && it.language.equalsAny("ja", "jpn") }?.format ?: "AAC"
         val newName = output.name.replace("%res%", "${resolution}p", true).replace("%jp%", jpCodec, true)
