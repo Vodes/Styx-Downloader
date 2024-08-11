@@ -1,6 +1,6 @@
 plugins {
-    kotlin("jvm") version "2.0.0"
-    kotlin("plugin.serialization") version "2.0.0"
+    kotlin("jvm") version "2.0.10"
+    kotlin("plugin.serialization") version "2.0.10"
     application
     `java-library`
     `maven-publish`
@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "moe.styx"
-version = "0.3.1"
+version = "0.3.2"
 
 repositories {
     mavenCentral()

@@ -113,6 +113,9 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
         val newFile = File(output.parentFile, newName)
         if (output.renameTo(newFile))
             output = newFile
+        else {
+            Log.e("Source: ${output.name}") { "Could not rename file to '${newFile.name}'" }
+        }
     }
 
     if (previous != null) {
