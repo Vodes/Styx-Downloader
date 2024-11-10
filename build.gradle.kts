@@ -1,6 +1,6 @@
 plugins {
-    kotlin("jvm") version "2.0.10"
-    kotlin("plugin.serialization") version "2.0.10"
+    kotlin("jvm") version "2.0.21"
+    kotlin("plugin.serialization") version "2.0.21"
     application
     `java-library`
     `maven-publish`
@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "moe.styx"
-version = "0.3.3"
+version = "0.4.0"
 
 repositories {
     mavenCentral()
@@ -18,24 +18,24 @@ repositories {
 }
 
 dependencies {
-    implementation("moe.styx:styx-common-jvm:0.1.3")
+    implementation("moe.styx:styx-common-jvm:0.3.2")
     implementation("moe.styx:styx-db:0.2.3")
-    implementation("com.github.Vodes:PircBot:master-SNAPSHOT")
+    implementation("com.github.Vodes:PircBot:0.2")
     implementation("com.github.Vodes:anitomyJ:99a355bf0d")
 
     implementation("net.peanuuutz.tomlkt:tomlkt:0.3.7")
     implementation("com.github.ajalt.mordant:mordant:2.6.0")
     implementation("de.androidpit:color-thief:1.1.2")
-    implementation("com.google.guava:guava:33.2.0-jre")
-    implementation("org.postgresql:postgresql:42.7.3")
-    implementation("com.apptasticsoftware:rssreader:3.6.0")
+    implementation("com.google.guava:guava:33.3.1-jre")
+    implementation("org.postgresql:postgresql:42.7.4")
+    implementation("com.apptasticsoftware:rssreader:3.8.2")
     implementation("org.apache.commons:commons-collections4:4.4")
-    implementation("com.twelvemonkeys.imageio:imageio-core:3.10.1")
-    runtimeOnly("com.twelvemonkeys.imageio:imageio-webp:3.10.1")
+    implementation("com.twelvemonkeys.imageio:imageio-core:3.12.0")
+    runtimeOnly("com.twelvemonkeys.imageio:imageio-webp:3.12.0")
 
     implementation("org.javacord:javacord:3.8.0")
-    implementation("org.slf4j:slf4j-simple:2.0.12")
-    runtimeOnly("org.apache.logging.log4j:log4j-to-slf4j:2.23.1")
+    implementation("org.slf4j:slf4j-simple:2.0.16")
+    runtimeOnly("org.apache.logging.log4j:log4j-to-slf4j:2.24.1")
     implementation("commons-net:commons-net:3.10.0")
 
     testImplementation(kotlin("test"))
