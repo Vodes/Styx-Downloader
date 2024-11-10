@@ -13,7 +13,7 @@ object RegexCollection {
     val seasonZeroRegex = "(?: |\\.)S00E(?<ep>\\d+)(?: |\\.)".toRegex()
     val p2pGroupRegex = ".+-(?<name>\\w+)\$".toRegex()
 
-    val oldNandesukaFixRegex = ".+(-(?<name>\\w+)(?<site> \\((?:CR|NF|AMZN|HIDIVE|HIDI|ADN|DSNP|HULU)\\)))".toRegex()
+    val oldNandesukaFixRegex = ".+(-(?<name>\\w+)(?<site> \\((?:CR|NF|AMZN|HIDIVE|HIDI|ADN|DSNP|HULU|B-Global)\\)))".toRegex()
 
     val xdccAnnounceRegex = "\\/msg (?<user>.+?) xdcc send #?(?<num>\\d+)".toRegex(RegexOption.IGNORE_CASE)
     val repackRegex = "(?:\\.| )REPACK(?<num>\\d+)?(?:\\.| )".toRegex(RegexOption.IGNORE_CASE)

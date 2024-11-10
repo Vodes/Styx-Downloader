@@ -5,6 +5,14 @@ import kotlin.test.assertTrue
 object ParserTests {
 
     fun testParser() {
+        parseMetadata("The Age of Cosmos Exploration - S01E12 - 1080p WEB H.264 -NanDesuKa (B-Global).mkv").assertResult(
+            "NanDesuKa",
+            "12",
+            "1",
+            null,
+            null
+        )
+
         parseMetadata("[SubsPlus+] Oshi no Ko - S02E01v2 (NF WEB 1080p AVC AAC) [E01A6580].mkv").assertResult(
             "SubsPlus+",
             "01",
