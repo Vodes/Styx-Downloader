@@ -68,7 +68,7 @@ object FTPHandler {
                         client.downloadFile(filePair.first, outFile, filePair.second)
                         downloadedSomething = true
                         if (outFile.exists())
-                            handleFile(outFile, result.target, result.option)
+                            handleFile(outFile, result.parentDir, result.target, result.option)
                         delay(10000)
                     }
                     client.disconnect()
@@ -89,12 +89,19 @@ object FTPHandler {
         client: FTPClient
     ): List<Pair<Pair<String, Long>, ParseResult>> {
         val remoteDir = if (dir.trim().startsWith("/")) dir.trim() else "/FTP-Zugang Server/${dir.trim()}"
+        val parentDir = runCatching {
+            if (client.changeWorkingDirectory(remoteDir))
+                client.printWorkingDirectory()
+            else
+                null
+        }.onFailure {
+            Log.e(exception = it) { "Could not verify last dir of: $remoteDir" }
+        }.getOrNull()?.substringAfterLast("/")?.apply { trim() }
 
         val now = Clock.System.now().toJavaInstant()
         val cutOff = now.minusSeconds(20)
         val parent = option parentIn targets
         val files = client.listFiles(remoteDir).filter { it.isFile && it.isValid }
-
         return files.map {
             val fileStuff = ("$remoteDir/${it.name}" to it.size)
             return@map if (it.timestampInstant.isAfter(cutOff)) {
@@ -102,7 +109,7 @@ object FTPHandler {
             } else if (!option.ignoreDelay && it.timestampInstant.isBefore(now.minus(1, ChronoUnit.HOURS))) {
                 fileStuff to ParseResult.DENIED(ParseDenyReason.PostIsTooOld)
             } else
-                fileStuff to option.episodeWanted(it.name, parent)
+                fileStuff to option.episodeWanted(it.name, parentDir, parent)
         }
     }
 }

@@ -169,7 +169,7 @@ object RSSHandler {
                     if (titleToCheck.filter { it == '/' }.length >= 3) {
                         titleToCheck = titleToCheck.split("/").maxBy { it.length }
                     }
-                    val parseResult = option.episodeWanted(titleToCheck, parent, true)
+                    val parseResult = option.episodeWanted(titleToCheck, null, parent, true)
                     results.add(item to parseResult)
                 }
             }

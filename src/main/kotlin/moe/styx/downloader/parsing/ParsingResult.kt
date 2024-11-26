@@ -19,7 +19,7 @@ enum class ParseDenyReason {
 }
 
 sealed class ParseResult {
-    data class OK(val target: DownloaderTarget, val option: DownloadableOption) : ParseResult()
+    data class OK(val target: DownloaderTarget, val option: DownloadableOption, val parentDir: String? = null) : ParseResult()
     data class FAILED(val parseFailReason: ParseDenyReason, val reasonMessage: String = "") : ParseResult()
     data class DENIED(val parseFailReason: ParseDenyReason, val reasonMessage: String = "") : ParseResult()
 }

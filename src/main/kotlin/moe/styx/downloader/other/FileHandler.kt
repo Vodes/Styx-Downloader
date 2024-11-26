@@ -27,7 +27,7 @@ import java.util.*
 
 private val epFormat = DecimalFormat("0.#")
 
-fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption): Boolean {
+fun handleFile(file: File, parentDir: String?, target: DownloaderTarget, option: DownloadableOption): Boolean {
     val anitomyResults = parseMetadata(file.name)
     val (episodeWithOffset, version) = anitomyResults.parseEpisodeAndVersion(option.episodeOffset) ?: return false
     val media = dbClient.transaction { MediaTable.query { selectAll().where { GUID eq target.mediaID }.toList() } }.firstOrNull() ?: return false
@@ -108,7 +108,10 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
 
     if (output.name.containsAny("%jp%", "%res%")) {
         val resolution = mediaInfoResult?.tracks?.find { it.type eqI "video" }?.let { it.height ?: "1080" } ?: "1080"
-        val jpCodec = mediaInfoResult?.tracks?.find { it.type eqI "audio" && it.language.equalsAny("ja", "jpn") }?.format ?: "AAC"
+        var jpCodec = mediaInfoResult?.tracks?.find { it.type eqI "audio" && it.language.equalsAny("ja", "jpn") }?.format ?: "AAC"
+        if (parentDir?.contains("ADN") == true) {
+            jpCodec = "qAAC"
+        }
         val newName = output.name.replace("%res%", "${resolution}p", true).replace("%jp%", jpCodec, true)
         val newFile = File(output.parentFile, newName)
         if (output.renameTo(newFile))
@@ -125,7 +128,7 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
     }
 
     val time = Clock.System.now().epochSeconds
-    val entry = previous?.copy(filePath = output.absolutePath, fileSize = output.length(), originalName = file.name)
+    val entry = previous?.copy(filePath = output.absolutePath, fileSize = output.length(), originalName = file.name, originalParentFolder = parentDir)
         ?: MediaEntry(
             UUID.randomUUID().toString().uppercase(),
             media.GUID,
@@ -138,7 +141,8 @@ fun handleFile(file: File, target: DownloaderTarget, option: DownloadableOption)
             null,
             output.absolutePath,
             output.length(),
-            file.name
+            file.name,
+            parentDir
         )
 
     val result = dbClient.transaction { MediaEntryTable.upsertItem(entry).insertedCount.toBoolean() }

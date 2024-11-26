@@ -68,7 +68,7 @@ class IRCClient(private val server: String, private val channels: List<String>) 
             return
         }
         val targets = dbClient.transaction { DownloaderTargetsTable.query { selectAll().toList() } }
-        val parseResult = targets.episodeWanted(transfer.file.name)
+        val parseResult = targets.episodeWanted(transfer.file.name, null)
         if (parseResult !is ParseResult.OK || parseResult.option.source != SourceType.XDCC) {
             Log.d(logSource) { "Blocked invalid incoming transfer from user '${transfer.nick}'" }
             transfer.close()
@@ -92,14 +92,14 @@ class IRCClient(private val server: String, private val channels: List<String>) 
             return
         }
         val targets = dbClient.transaction { DownloaderTargetsTable.query { selectAll().toList() } }
-        val parseResult = targets.episodeWanted(transfer.file.name)
+        val parseResult = targets.episodeWanted(transfer.file.name, null)
         if (parseResult !is ParseResult.OK || parseResult.option.source != SourceType.XDCC) {
             Log.d(logSource) { "Somehow ended up with unwanted file: ${transfer.file.name}" }
             return
         }
         Log.i(logSource) { "Downloaded file: ${transfer.file.name}" }
         // TODO: Perhaps add a delay to avoid parsing/moving just barely unfinished downloads
-        handleFile(transfer.file, parseResult.target, parseResult.option)
+        handleFile(transfer.file, null, parseResult.target, parseResult.option)
     }
 
     override fun onPrivateMessage(sender: String, login: String, hostname: String, message: String) {
@@ -121,7 +121,7 @@ class IRCClient(private val server: String, private val channels: List<String>) 
     private fun handleMessage(message: String, sender: String) {
         val announceMatch = RegexCollection.xdccAnnounceRegex.find(message) ?: return
         val targets = dbClient.transaction { DownloaderTargetsTable.query { selectAll().toList() } }
-        val parseResult = targets.episodeWanted(message)
+        val parseResult = targets.episodeWanted(message, null)
         if (parseResult !is ParseResult.OK || parseResult.option.source != SourceType.XDCC) {
             return
         }

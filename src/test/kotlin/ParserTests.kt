@@ -8,8 +8,8 @@ object ParserTests {
         parseMetadata("The Age of Cosmos Exploration - S01E12 - 1080p WEB H.264 -NanDesuKa (B-Global).mkv").assertResult(
             "NanDesuKa",
             "12",
-            "1",
-            null,
+            "01",
+            "The Age of Cosmos Exploration",
             null
         )
 

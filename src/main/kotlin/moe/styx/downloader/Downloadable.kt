@@ -2,6 +2,7 @@ package moe.styx.downloader
 
 import moe.styx.common.data.DownloadableOption
 import moe.styx.common.data.DownloaderTarget
+import moe.styx.common.data.SourceType
 import moe.styx.common.extension.equalsAny
 import moe.styx.db.tables.MediaEntryTable
 import moe.styx.downloader.parsing.ParseDenyReason
@@ -9,13 +10,12 @@ import moe.styx.downloader.parsing.ParseResult
 import moe.styx.downloader.parsing.parseEpisodeAndVersion
 import moe.styx.downloader.utils.RegexCollection
 import org.jetbrains.exposed.sql.selectAll
-import java.io.File
 import kotlin.math.abs
 
 val specialNumbers = listOf("2.0", "5.1", "7.1", "6.0", "5.0")
 
-fun DownloadableOption.episodeWanted(toMatch: String, parent: DownloaderTarget, rss: Boolean = false): ParseResult {
-    if (!this.matches(toMatch, rss)) {
+fun DownloadableOption.episodeWanted(toMatch: String, parentDir: String?, parent: DownloaderTarget, rss: Boolean = false): ParseResult {
+    if (!this.matches(toMatch, parentDir, rss)) {
         return ParseResult.FAILED(ParseDenyReason.NoOptionMatched)
     }
     // Ignore stuff like "One Piece - Egghead SP1" or "One Piece E1078.5"
@@ -49,10 +49,10 @@ fun DownloadableOption.episodeWanted(toMatch: String, parent: DownloaderTarget, 
     }.getOrNull()
 
     // Check what "option" the episode in the database corresponds to (if same and not a different version return false)
-    val existingOptionVal = listOf(parent).matchesAny(dbEpisode?.originalName, false)?.second?.priority ?: -1
+    val existingOptionVal = listOf(parent).matchesAny(dbEpisode?.originalName, dbEpisode?.originalParentFolder, false)?.second?.priority ?: -1
     if (dbEpisode != null && existingOptionVal == priority) {
         val existingData = parseEpisodeAndVersion(dbEpisode.originalName ?: "", episodeOffset)
-        if (existingData != null && version <= existingData.second && File(dbEpisode.filePath).exists())
+        if (existingData != null && version <= existingData.second /*&& File(dbEpisode.filePath).exists()*/)
             return ParseResult.DENIED(ParseDenyReason.SameVersionPresent)
     }
     // Return false if we already have a better version of this episode
@@ -64,31 +64,38 @@ fun DownloadableOption.episodeWanted(toMatch: String, parent: DownloaderTarget, 
         return ParseResult.DENIED(ParseDenyReason.WaitingForPreviousOption)
 
     // Yay we need this file
-    return ParseResult.OK(parent, this)
+    return ParseResult.OK(parent, this, parentDir)
 }
 
-fun List<DownloaderTarget>.episodeWanted(toMatch: String, rss: Boolean = false): ParseResult {
-    val (target, option) = matchesAny(toMatch, rss) ?: return ParseResult.FAILED(ParseDenyReason.NoOptionMatched)
-    return option.episodeWanted(toMatch, target, rss)
+fun List<DownloaderTarget>.episodeWanted(toMatch: String, parentDir: String?, rss: Boolean = false): ParseResult {
+    val (target, option) = matchesAny(toMatch, parentDir, rss) ?: return ParseResult.FAILED(ParseDenyReason.NoOptionMatched)
+    return option.episodeWanted(toMatch, parentDir, target, rss)
 }
 
-fun List<DownloaderTarget>.matchesAny(toMatch: String?, rss: Boolean = false): Pair<DownloaderTarget, DownloadableOption>? {
+fun List<DownloaderTarget>.matchesAny(toMatch: String?, parentDir: String?, rss: Boolean = false): Pair<DownloaderTarget, DownloadableOption>? {
     if (toMatch == null)
         return null
     for (target in this) {
-        val match = target.options.find { it.matches(toMatch, rss) }
+        val match = target.options.find { it.matches(toMatch, parentDir, rss) }
         if (match != null)
             return target to match
     }
     return null
 }
 
-fun DownloadableOption.matches(toMatch: String, rss: Boolean = false): Boolean {
+fun DownloadableOption.matches(toMatch: String, parentDir: String?, rss: Boolean = false): Boolean {
     val toMatch = toMatch.replace(RegexCollection.repackRegex, "")
     var regex = this.fileRegex.toRegex(RegexOption.IGNORE_CASE)
     if (rss) {
         regex = if (!this.rssRegex.isNullOrBlank()) this.rssRegex!!.toRegex(RegexOption.IGNORE_CASE) else
             this.fileRegex.replace("\\.mkv", "").replace(".mkv", "").toRegex(RegexOption.IGNORE_CASE)
     }
-    return regex.find(if (!(toMatch.endsWith(".mkv") || toMatch.endsWith(".mka")) && !rss) "$toMatch.mkv" else toMatch) != null
+    val nameMatches = regex.find(if (!(toMatch.endsWith(".mkv") || toMatch.endsWith(".mka")) && !rss) "$toMatch.mkv" else toMatch) != null
+    val parentMatches =
+        if (this.ignoreParentFolder || this.source != SourceType.FTP || parentDir == null)
+            true
+        else
+            this.sourcePath?.contains(parentDir, true) == true
+
+    return nameMatches && parentMatches
 }

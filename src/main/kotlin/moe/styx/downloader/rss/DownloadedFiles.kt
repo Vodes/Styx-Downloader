@@ -21,20 +21,20 @@ fun startCheckingLocal() = launchThreaded {
         val targets = dbClient.transaction { DownloaderTargetsTable.query { selectAll().toList() } }
         if (tempDir.exists() && tempDir.isDirectory) {
             listFiles(tempDir).forEach {
-                val parseResult = targets.episodeWanted(it.name)
+                val parseResult = targets.episodeWanted(it.name, null)
                 if (parseResult !is ParseResult.OK)
                     return@forEach
-                handleFile(it, parseResult.target, parseResult.option)
+                handleFile(it, null, parseResult.target, parseResult.option)
             }
         }
         if (seedDir.exists() && seedDir.isDirectory) {
             listFiles(seedDir).forEach {
-                val parseResult = targets.episodeWanted(it.name)
+                val parseResult = targets.episodeWanted(it.name, null)
                 if (parseResult !is ParseResult.OK || copied.anyEquals(it.name))
                     return@forEach
                 val copy = it.copyTo(File(seedDir.parentFile, it.name), overwrite = true)
                 copied.add(it.name)
-                if (handleFile(copy, parseResult.target, parseResult.option))
+                if (handleFile(copy, null, parseResult.target, parseResult.option))
                     copy.delete()
             }
         }

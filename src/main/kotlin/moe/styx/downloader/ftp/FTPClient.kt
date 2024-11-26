@@ -16,7 +16,7 @@ class FTPClient(
     private val pass: String?,
     ftps: Boolean = true,
     explicit: Boolean = false,
-    private val defaultWorkdir: String? = null
+    val defaultWorkdir: String? = null
 ) {
     companion object {
         fun fromConnectionString(connectionString: String): FTPClient {
@@ -74,6 +74,7 @@ class FTPClient(
     fun listFiles() = client.listFiles()
     fun listFiles(path: String) = client.listFiles(path)
     fun printWorkingDirectory() = client.printWorkingDirectory()
+    fun changeWorkingDirectory(path: String) = client.changeWorkingDirectory(path)
 
     fun downloadFile(remote: String, target: File, targetSize: Long) {
         val out = LimitedOutputStream(target, targetSize)

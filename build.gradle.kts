@@ -12,14 +12,15 @@ version = "0.4.2"
 
 repositories {
     mavenCentral()
+    mavenLocal()
     maven("https://repo.styx.moe/releases")
     maven("https://repo.styx.moe/snapshots")
     maven("https://jitpack.io")
 }
 
 dependencies {
-    implementation("moe.styx:styx-common-jvm:0.3.2")
-    implementation("moe.styx:styx-db:0.3.0")
+    implementation("moe.styx:styx-common-jvm:0.4.1")
+    implementation("moe.styx:styx-db:0.4.0")
     implementation("com.github.Vodes:PircBot:0.2")
     implementation("com.github.Vodes:anitomyJ:99a355bf0d")
 
