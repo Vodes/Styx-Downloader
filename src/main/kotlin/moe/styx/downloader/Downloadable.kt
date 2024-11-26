@@ -10,6 +10,7 @@ import moe.styx.downloader.parsing.ParseResult
 import moe.styx.downloader.parsing.parseEpisodeAndVersion
 import moe.styx.downloader.utils.RegexCollection
 import org.jetbrains.exposed.sql.selectAll
+import java.io.File
 import kotlin.math.abs
 
 val specialNumbers = listOf("2.0", "5.1", "7.1", "6.0", "5.0")
@@ -52,7 +53,7 @@ fun DownloadableOption.episodeWanted(toMatch: String, parentDir: String?, parent
     val existingOptionVal = listOf(parent).matchesAny(dbEpisode?.originalName, dbEpisode?.originalParentFolder, false)?.second?.priority ?: -1
     if (dbEpisode != null && existingOptionVal == priority) {
         val existingData = parseEpisodeAndVersion(dbEpisode.originalName ?: "", episodeOffset)
-        if (existingData != null && version <= existingData.second /*&& File(dbEpisode.filePath).exists()*/)
+        if (existingData != null && version <= existingData.second && File(dbEpisode.filePath).exists())
             return ParseResult.DENIED(ParseDenyReason.SameVersionPresent)
     }
     // Return false if we already have a better version of this episode
