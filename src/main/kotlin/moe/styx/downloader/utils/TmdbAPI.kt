@@ -4,17 +4,17 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
+import moe.styx.common.config.UnifiedConfig
 import moe.styx.common.data.tmdb.TmdbEpisodeOrder
 import moe.styx.common.data.tmdb.TmdbMeta
 import moe.styx.common.data.tmdb.TmdbSeason
 import moe.styx.common.http.httpClient
 import moe.styx.common.json
-import moe.styx.downloader.downloaderConfig
 
 suspend inline fun <reified T> genericTmdbGet(url: String): T? {
     val response = httpClient.get(url) {
         accept(ContentType.Application.Json)
-        bearerAuth(downloaderConfig.tmdbToken)
+        bearerAuth(UnifiedConfig.current.base.tmdbToken())
         userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36")
     }
 

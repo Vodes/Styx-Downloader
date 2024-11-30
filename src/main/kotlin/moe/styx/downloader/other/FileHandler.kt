@@ -2,15 +2,16 @@ package moe.styx.downloader.other
 
 import kotlinx.datetime.Clock
 import kotlinx.serialization.encodeToString
+import moe.styx.common.config.UnifiedConfig
 import moe.styx.common.data.*
 import moe.styx.common.data.MediaInfo
 import moe.styx.common.extension.*
+import moe.styx.common.toml
 import moe.styx.common.util.launchGlobal
 import moe.styx.db.tables.ChangesTable
 import moe.styx.db.tables.MediaEntryTable
 import moe.styx.db.tables.MediaInfoTable
 import moe.styx.db.tables.MediaTable
-import moe.styx.downloader.Main
 import moe.styx.downloader.dbClient
 import moe.styx.downloader.other.MetadataFetcher.addEntry
 import moe.styx.downloader.parsing.AnitomyResults
@@ -40,7 +41,7 @@ fun handleFile(file: File, parentDir: String?, target: DownloaderTarget, option:
     val filledDir = target.outputDir.fillTokens(media, option, anitomyResults)
     val outDir = File(File(filledDir).parentFile, File(filledDir).name.toFileSystemCompliantName())
     outDir.mkdirs()
-    val muxDir = File(Main.appDir, "Muxing")
+    val muxDir = File(UnifiedConfig.configFile.parentFile, "Muxing")
     muxDir.mkdirs()
 
     var output = File(outDir, outname)
@@ -73,7 +74,7 @@ fun handleFile(file: File, parentDir: String?, target: DownloaderTarget, option:
 
         logFile.writeText(
             logFile.readText() +
-                    "ProcessingOptions:\n${Main.toml.encodeToString(option.processingOptions!!)}\n\n" +
+                    "ProcessingOptions:\n${toml.encodeToString(option.processingOptions!!)}\n\n" +
                     "---------- Muxtools Log below ----------\n\n"
         )
         commands.add(file.absolutePath)

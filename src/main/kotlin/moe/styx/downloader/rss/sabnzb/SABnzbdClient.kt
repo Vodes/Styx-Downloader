@@ -31,7 +31,7 @@ class SABnzbdClient(private var url: String, val apiKey: String) {
                 parameters.append("mode", "set_config")
                 parameters.append("section", "categories")
                 parameters.append("name", "styx")
-                parameters.append("dir", downloaderConfig.rssConfig.defaultNonSeedDir)
+                parameters.append("dir", downloaderConfig.rssConfig.tempDir)
             }
         }
         val result = response.status.isSuccess()

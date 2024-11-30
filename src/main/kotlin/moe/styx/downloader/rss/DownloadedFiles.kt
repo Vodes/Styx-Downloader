@@ -14,8 +14,8 @@ import org.jetbrains.exposed.sql.selectAll
 import java.io.File
 
 fun startCheckingLocal() = launchThreaded {
-    val tempDir = File(downloaderConfig.rssConfig.defaultNonSeedDir)
-    val seedDir = File(downloaderConfig.rssConfig.defaultSeedDir)
+    val tempDir = File(downloaderConfig.rssConfig.tempDir)
+    val seedDir = File(downloaderConfig.rssConfig.seedDir)
     val copied = mutableListOf<String>()
     while (true) {
         val targets = dbClient.transaction { DownloaderTargetsTable.query { selectAll().toList() } }

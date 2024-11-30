@@ -7,6 +7,7 @@ import io.ktor.http.*
 import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import moe.styx.common.config.UnifiedConfig
 import moe.styx.common.data.Media
 import moe.styx.common.data.MediaEntry
 import moe.styx.common.extension.eqI
@@ -16,8 +17,8 @@ import moe.styx.common.http.httpClient
 import moe.styx.common.util.launchGlobal
 import moe.styx.db.tables.*
 import moe.styx.downloader.dbClient
-import moe.styx.downloader.downloaderConfig
 import moe.styx.downloader.utils.Log
+import moe.styx.downloader.utils.RegexCollection
 import moe.styx.downloader.utils.getTargetTime
 import moe.styx.downloader.utils.getURL
 import org.javacord.api.DiscordApi
@@ -38,12 +39,13 @@ import kotlin.time.toDuration
 private lateinit var bot: DiscordApi
 
 fun startBot() {
-    if (!downloaderConfig.discordBot.isValid())
+    val discordConfig = UnifiedConfig.current.discord
+    if (discordConfig.botToken().isBlank())
         return
-    
-    bot = DiscordApiBuilder().setToken(downloaderConfig.discordBot.token).setAllIntents().login().join()
 
-    if (downloaderConfig.discordBot.scheduleMessage.isBlank())
+    bot = DiscordApiBuilder().setToken(discordConfig.botToken()).setAllIntents().login().join()
+
+    if (discordConfig.scheduleMessageURL().isBlank())
         return
 
     launchGlobal {
@@ -77,7 +79,7 @@ fun startBot() {
                         )
                     }
                 }
-                val message = bot.getMessageByLink(downloaderConfig.discordBot.scheduleMessage).get().join()
+                val message = bot.getMessageByLink(discordConfig.scheduleMessageURL()).get().join()
                 message.edit("", embed)
             }.onFailure { it.printStackTrace() }
 
@@ -87,19 +89,21 @@ fun startBot() {
 }
 
 fun notifyDiscord(entry: MediaEntry, media: Media) {
-    if (!downloaderConfig.discordBot.isValid())
+    val discordConfig = UnifiedConfig.current.discord
+    if (discordConfig.botToken().isBlank() || discordConfig.announcementChannelURL().isBlank())
         return
-    if (media.thumbID.isNullOrBlank())
+    val channelMatch = RegexCollection.channelURLRegex.find(discordConfig.announcementChannelURL())
+    if (media.thumbID.isNullOrBlank() || channelMatch == null)
         return
     val thumb = dbClient.transaction { ImageTable.query { selectAll().where { GUID eq media.thumbID!! }.toList() } }.firstOrNull() ?: return
     val users = dbClient.transaction { UserTable.query { selectAll().toList() } }
     checkAndRemoveSchedule(media, entry)
 
     runCatching {
-        val server = bot.getServerById(downloaderConfig.discordBot.announceServer).getOrNull() ?: return@runCatching
-        val channel = server.getTextChannelById(downloaderConfig.discordBot.announceChannel).getOrNull() ?: return@runCatching
-        val pingRole = server.getRoleById(downloaderConfig.discordBot.pingRole).getOrNull()
-        val dmRole = server.getRoleById(downloaderConfig.discordBot.dmRole).getOrNull()
+        val server = channelMatch.groups["serverID"]?.value?.let { bot.getServerById(it).getOrNull() } ?: return@runCatching
+        val channel = channelMatch.groups["channelID"]?.value?.let { server.getTextChannelById(it).getOrNull() } ?: return@runCatching
+        val pingRole = server.getRoleById(UnifiedConfig.current.discord.announcementPingRole()).getOrNull()
+        val dmRole = server.getRoleById(UnifiedConfig.current.discord.announcementDmRole()).getOrNull()
 
         if (!channel.canYouWrite()) {
             Log.e { "Discord announce channel is not writeable!" }
@@ -114,7 +118,7 @@ fun notifyDiscord(entry: MediaEntry, media: Media) {
             .filterValues { it != null }
 
         val embed = EmbedBuilder()
-            .setAuthor("Styx", downloaderConfig.siteBaseUrl, "${downloaderConfig.imageBaseUrl}/website/icon.png")
+            .setAuthor("Styx", UnifiedConfig.current.base.siteBaseURL(), "${UnifiedConfig.current.base.imageBaseURL()}/website/icon.png")
             .setThumbnail(thumb.getURL())
             .setTitle("New episode")
             .setDescription("${media.name} - ${entry.entryNumber}")

@@ -3,6 +3,7 @@ package moe.styx.downloader.other
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
+import moe.styx.common.config.UnifiedConfig
 import moe.styx.common.data.Media
 import moe.styx.common.data.MediaEntry
 import moe.styx.common.data.TMDBMapping
@@ -17,8 +18,6 @@ import moe.styx.db.tables.ChangesTable
 import moe.styx.db.tables.MediaEntryTable
 import moe.styx.db.tables.MediaTable
 import moe.styx.downloader.dbClient
-import moe.styx.downloader.downloaderConfig
-import moe.styx.downloader.getAppDir
 import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.getRemoteEpisodes
 import org.jetbrains.exposed.sql.selectAll
@@ -32,7 +31,7 @@ data class EntryMetadataUpdate(val entryID: String, val added: Long, var lastChe
 object MetadataFetcher {
     private var entries = mutableListOf<EntryMetadataUpdate>()
     private val entryFile by lazy {
-        File(getAppDir(), "queued-metadata-updates.json")
+        File(UnifiedConfig.configFile.parentFile, "queued-metadata-updates.json")
     }
 
     fun addEntry(entry: MediaEntry) {
@@ -44,7 +43,7 @@ object MetadataFetcher {
     private fun save() = entryFile.writeText(json.encodeToString(entries))
 
     fun start() = launchGlobal {
-        if (downloaderConfig.tmdbToken.isBlank())
+        if (UnifiedConfig.current.base.tmdbToken().isBlank())
             return@launchGlobal
         Log.i { "Starting Metadatafetcher" }
         if (entryFile.exists()) {

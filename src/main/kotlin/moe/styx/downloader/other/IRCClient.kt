@@ -3,12 +3,12 @@ package moe.styx.downloader.other
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import kotlinx.coroutines.runBlocking
+import moe.styx.common.config.UnifiedConfig
 import moe.styx.common.data.SourceType
 import moe.styx.common.extension.capitalize
 import moe.styx.common.extension.eqI
 import moe.styx.common.http.httpClient
 import moe.styx.db.tables.DownloaderTargetsTable
-import moe.styx.downloader.Main
 import moe.styx.downloader.dbClient
 import moe.styx.downloader.downloaderConfig
 import moe.styx.downloader.episodeWanted
@@ -75,7 +75,7 @@ class IRCClient(private val server: String, private val channels: List<String>) 
             return
         }
 
-        val tempDir = File(Main.appDir, "Temp-XDCC-Downloads")
+        val tempDir = File(UnifiedConfig.configFile.parentFile, "Temp-XDCC-Downloads")
         tempDir.mkdirs()
         Log.i(logSource) { "Downloading File '${transfer.file.name}' from '${transfer.nick}'" }
         transfer.receive(File(tempDir, transfer.file.name).also {

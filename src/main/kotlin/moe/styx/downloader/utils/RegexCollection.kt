@@ -22,6 +22,7 @@ object RegexCollection {
     val ftpConnectionStringRegex =
         "(?<connection>ftpe?s?):\\/\\/(?:(?<user>.+):(?<pass>.+)@)?(?<host>(?:[a-zA-Z0-9]+\\.?)+)(?::(?<port>\\d+))?(?<path>\\/.+)?"
             .toRegex(RegexOption.IGNORE_CASE)
+    val channelURLRegex = "channels\\/(?<serverID>\\d+)\\/(?<channelID>\\d+)".toRegex(RegexOption.IGNORE_CASE)
 }
 
 object TokenRegex {
