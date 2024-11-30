@@ -23,7 +23,7 @@ object Log {
     }
 
     fun d(source: String? = null, message: () -> String) {
-        if (!UnifiedConfig.current.base.debug())
+        if (!UnifiedConfig.current.debug())
             return
         printMsg(message(), "D", source, prefixColor = TextColors.brightGreen)
     }
