@@ -261,6 +261,16 @@ private fun getBaseCommand(processingOptions: ProcessingOptions): MutableList<St
 
     if (processingOptions.restyleSubs)
         commands.add("--restyle-subs")
+    if (processingOptions.removeUnnecessary)
+        commands.add("-rm")
+    if (processingOptions.audioLanguages.isNotBlank())
+        processingOptions.audioLanguages.split(",").forEach {
+            commands.add("-al=${it.trim()}")
+        }
+    if (processingOptions.subLanguages.isNotBlank())
+        processingOptions.subLanguages.split(",").forEach {
+            commands.add("-sl=${it.trim()}")
+        }
     if (processingOptions.keepBetterAudio)
         commands.add("--best-audio")
     if (processingOptions.keepVideoOfPrevious)
