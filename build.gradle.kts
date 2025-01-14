@@ -1,6 +1,6 @@
 plugins {
-    kotlin("jvm") version "2.0.21"
-    kotlin("plugin.serialization") version "2.0.21"
+    kotlin("jvm") version "2.1.0"
+    kotlin("plugin.serialization") version "2.1.0"
     application
     `java-library`
     `maven-publish`
@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "moe.styx"
-version = "0.5.2"
+version = "0.5.3"
 
 repositories {
     mavenCentral()
@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-    implementation("moe.styx:styx-db:0.4.4")
+    implementation("moe.styx:styx-db:0.4.6")
     implementation("com.github.Vodes:PircBot:0.2")
     implementation("com.github.Vodes:anitomyJ:99a355bf0d")
 
