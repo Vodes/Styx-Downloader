@@ -1,6 +1,6 @@
 plugins {
-    kotlin("jvm") version "2.1.10"
-    kotlin("plugin.serialization") version "2.1.10"
+    kotlin("jvm") version "2.1.20"
+    kotlin("plugin.serialization") version "2.1.20"
     application
     `java-library`
     `maven-publish`
@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "moe.styx"
-version = "0.5.5"
+version = "0.5.6"
 
 repositories {
     mavenCentral()
@@ -19,16 +19,15 @@ repositories {
 }
 
 dependencies {
-    implementation("moe.styx:styx-db:0.5.2")
+    implementation("moe.styx:styx-db:0.5.5")
     implementation("com.github.Vodes:PircBot:0.2")
     implementation("com.github.Vodes:anitomyJ:80f36aceb2")
 
-    implementation("net.peanuuutz.tomlkt:tomlkt:0.3.7")
     implementation("com.github.ajalt.mordant:mordant:2.6.0")
     implementation("de.androidpit:color-thief:1.1.2")
     implementation("com.google.guava:guava:33.3.1-jre")
-    implementation("org.postgresql:postgresql:42.7.4")
-    implementation("com.apptasticsoftware:rssreader:3.8.2")
+    implementation("org.postgresql:postgresql:42.7.7")
+    implementation("com.apptasticsoftware:rssreader:3.9.3")
     implementation("org.apache.commons:commons-collections4:4.4")
     implementation("com.twelvemonkeys.imageio:imageio-core:3.12.0")
     runtimeOnly("com.twelvemonkeys.imageio:imageio-webp:3.12.0")
