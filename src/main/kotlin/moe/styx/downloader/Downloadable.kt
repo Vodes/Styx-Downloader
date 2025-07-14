@@ -87,11 +87,12 @@ fun List<DownloaderTarget>.matchesAny(toMatch: String?, parentDir: String?, rss:
 fun DownloadableOption.matches(toMatch: String, parentDir: String?, rss: Boolean = false): Boolean {
     val toMatch = toMatch.replace(RegexCollection.repackRegex, "")
     var regex = this.fileRegex.toRegex(RegexOption.IGNORE_CASE)
+    var nameMatches = regex.find(if (!(toMatch.endsWith(".mkv") || toMatch.endsWith(".mka")) && !rss) "$toMatch.mkv" else toMatch) != null
     if (rss) {
         regex = if (!this.rssRegex.isNullOrBlank()) this.rssRegex!!.toRegex(RegexOption.IGNORE_CASE) else
             this.fileRegex.replace("\\.mkv", "").replace(".mkv", "").toRegex(RegexOption.IGNORE_CASE)
+        nameMatches = nameMatches || regex.find(toMatch) != null
     }
-    val nameMatches = regex.find(if (!(toMatch.endsWith(".mkv") || toMatch.endsWith(".mka")) && !rss) "$toMatch.mkv" else toMatch) != null
     val parentMatches =
         if (this.ignoreParentFolder || this.source != SourceType.FTP || parentDir == null)
             true
