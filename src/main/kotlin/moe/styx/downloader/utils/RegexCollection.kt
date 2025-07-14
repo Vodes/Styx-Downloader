@@ -9,6 +9,7 @@ object RegexCollection {
     val torrentHrefRegex = "href=\"(?<url>https?:\\/\\/[^ \"<>]+?\\.torrent)\"".toRegex(RegexOption.IGNORE_CASE)
     val generalURLRegex = "https?:\\/\\/.+".toRegex(RegexOption.IGNORE_CASE)
     val specialEpisodeRegex = "(?:(SP\\d)|((?:(?:E| ?- ?)(?<num>\\d+\\.\\d(?: |\\.|\$)))))".toRegex()
+    val sxxExxWithNumberEPTitleRegex = "(?<entire>(?<realEpisode>S\\d{1,2}E\\d{1,4})(?:\\.| )\\d{1,2})[ |\\.]".toRegex()
     val crc32Regex = " ?(?:\\[|\\(|\\.)[0-F]{8}(?:\\]|\\)|\\.) ?".toRegex()
     val seasonZeroRegex = "(?: |\\.)S00E(?<ep>\\d+)(?: |\\.)".toRegex()
     val p2pGroupRegex = ".+-(?<name>\\w+)\$".toRegex()

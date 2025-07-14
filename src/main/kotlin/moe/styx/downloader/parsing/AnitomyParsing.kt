@@ -54,7 +54,13 @@ fun parseMetadata(toParse: String): AnitomyResults {
     // Other misc fixes that kinda fuck with anitomy
     // Single letter parts in scene naming, for example Invincible.2021.S02E01.A.LESSON.FOR.YOUR.NEXT.LIFE.1080p.AMZN.WEB-DL.DDP5.1.H.264-FLUX.mkv
     val singleLetterMatch = RegexCollection.singleLetterWithDot.find(adjusted)
+    val singleNumberTitleMatch = RegexCollection.sxxExxWithNumberEPTitleRegex.find(adjusted)
     adjusted = if (singleLetterMatch != null) adjusted.replaceFirst(singleLetterMatch.groups[1]!!.value, ".") else adjusted
+
+    adjusted = if(singleNumberTitleMatch != null)
+        adjusted.replaceFirst(singleNumberTitleMatch.groups["entire"]!!.value, singleNumberTitleMatch.groups["realEpisode"]!!.value)
+    else adjusted
+
     adjusted = adjusted.replaceFirst(RegexCollection.crc32Regex, "")
     if (adjusted.contains("NanDesuKa", true)) {
         val oldFixMatch = RegexCollection.oldNandesukaFixRegex.find(adjusted)

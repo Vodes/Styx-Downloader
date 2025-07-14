@@ -21,7 +21,7 @@ repositories {
 dependencies {
     implementation("moe.styx:styx-db:0.5.2")
     implementation("com.github.Vodes:PircBot:0.2")
-    implementation("com.github.Vodes:anitomyJ:99a355bf0d")
+    implementation("com.github.Vodes:anitomyJ:80f36aceb2")
 
     implementation("net.peanuuutz.tomlkt:tomlkt:0.3.7")
     implementation("com.github.ajalt.mordant:mordant:2.6.0")

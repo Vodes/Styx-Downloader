@@ -112,6 +112,12 @@ object ParserTests {
             "2",
             "NieRAutomata Ver 1.1a"
         )
+        parseMetadata("CITY.THE.ANIMATION.S01E02.2.1080p.AMZN.WEB-DL.MULTi.DDP2.0.H.264-VARYG.mkv").assertResult(
+            "VARYG",
+            "02",
+            "01",
+            "CITY THE ANIMATION"
+        )
     }
 
     private fun AnitomyResults.assertResult(
