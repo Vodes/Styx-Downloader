@@ -9,13 +9,13 @@ import io.ktor.http.*
 import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import kotlinx.datetime.Clock
 import moe.styx.common.data.DownloadableOption
 import moe.styx.common.data.DownloaderTarget
 import moe.styx.common.data.SourceType
 import moe.styx.common.extension.anyEquals
 import moe.styx.common.extension.eqI
 import moe.styx.common.http.httpClient
+import moe.styx.common.isDocker
 import moe.styx.common.util.launchGlobal
 import moe.styx.common.util.launchThreaded
 import moe.styx.db.tables.DownloaderTargetsTable
@@ -24,9 +24,11 @@ import moe.styx.downloader.parsing.ParseDenyReason
 import moe.styx.downloader.parsing.ParseResult
 import moe.styx.downloader.rss.transmission.TransmissionClient
 import moe.styx.downloader.utils.*
-import org.jetbrains.exposed.sql.selectAll
+import org.apache.commons.lang3.SystemUtils
+import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.time.Clock
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -130,7 +132,10 @@ object RSSHandler {
         runBlocking {
             val (resolved, query) = resolveTemplate(feedURL)
             val source = "RSSHandler for URL: $resolved"
+            val systemName = "${SystemUtils.OS_NAME}/${SystemUtils.OS_VERSION}; ${SystemUtils.OS_ARCH}"
             val response = httpClient.get(resolved) {
+                if (feedURL.contains("nzb", true))
+                    userAgent("${BuildConfig.APP_NAME}/${BuildConfig.APP_VERSION} (${if (isDocker) "Docker" else systemName})")
                 url {
                     if (query.isNotBlank() && !parameters.contains("q")) {
                         parameters.append("q", query)

@@ -5,6 +5,7 @@ plugins {
     `java-library`
     `maven-publish`
     id("io.github.goooler.shadow") version "8.1.7"
+    id("com.github.gmazzo.buildconfig") version "6.0.9"
 }
 
 group = "moe.styx"
@@ -38,6 +39,14 @@ dependencies {
     implementation("commons-net:commons-net:3.10.0")
 
     testImplementation(kotlin("test"))
+}
+
+buildConfig {
+    packageName("moe.styx.downloader")
+    val isDev = System.getenv("STYX_DEV")?.isNotBlank() == true
+    buildConfigField("APP_NAME", project.name.replace("Downloader", "DL"))
+    buildConfigField("APP_VERSION", provider { "${project.version}".let { if (isDev) "$it-dev" else it } })
+    buildConfigField("IS_DEV", isDev)
 }
 
 kotlin {
