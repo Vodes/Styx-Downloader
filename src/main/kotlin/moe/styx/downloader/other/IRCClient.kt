@@ -15,7 +15,7 @@ import moe.styx.downloader.episodeWanted
 import moe.styx.downloader.parsing.ParseResult
 import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.RegexCollection
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jibble.pircbot.DccFileTransfer
 import org.jibble.pircbot.PircBot
 import java.io.File

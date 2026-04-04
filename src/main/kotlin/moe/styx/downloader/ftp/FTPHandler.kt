@@ -1,8 +1,6 @@
 package moe.styx.downloader.ftp
 
 import kotlinx.coroutines.delay
-import kotlinx.datetime.Clock
-import kotlinx.datetime.toJavaInstant
 import moe.styx.common.config.UnifiedConfig
 import moe.styx.common.data.DownloadableOption
 import moe.styx.common.data.DownloaderTarget
@@ -17,11 +15,13 @@ import moe.styx.downloader.parsing.ParseResult
 import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.getFTPOptions
 import moe.styx.downloader.utils.parentIn
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.io.File
 import java.time.temporal.ChronoUnit
+import kotlin.time.Clock
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
+import kotlin.time.toJavaInstant
 
 object FTPHandler {
     lateinit var defaultFTPClient: FTPClient

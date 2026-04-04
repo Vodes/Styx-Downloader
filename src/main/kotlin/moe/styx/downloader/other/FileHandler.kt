@@ -1,6 +1,5 @@
 package moe.styx.downloader.other
 
-import kotlinx.datetime.Clock
 import kotlinx.serialization.encodeToString
 import moe.styx.common.config.UnifiedConfig
 import moe.styx.common.data.*
@@ -19,12 +18,14 @@ import moe.styx.downloader.parsing.parseEpisodeAndVersion
 import moe.styx.downloader.parsing.parseMetadata
 import moe.styx.downloader.utils.*
 import moe.styx.downloader.utils.Log
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.text.DecimalFormat
 import java.util.*
+import kotlin.time.Clock
 
 private val epFormat = DecimalFormat("0.#")
 

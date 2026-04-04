@@ -2,7 +2,6 @@ package moe.styx.downloader.other
 
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import moe.styx.common.config.UnifiedConfig
 import moe.styx.common.data.Media
 import moe.styx.common.data.MediaEntry
@@ -20,7 +19,8 @@ import moe.styx.db.tables.MediaTable
 import moe.styx.downloader.dbClient
 import moe.styx.downloader.utils.Log
 import moe.styx.downloader.utils.getRemoteEpisodes
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.io.File
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration

@@ -2,11 +2,11 @@ package moe.styx.downloader.utils
 
 import com.github.ajalt.mordant.rendering.TextColors
 import com.github.ajalt.mordant.terminal.Terminal
-import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import moe.styx.common.config.UnifiedConfig
 import moe.styx.common.extension.formattedStr
+import kotlin.time.Clock
 
 object Log {
 

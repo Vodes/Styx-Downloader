@@ -9,7 +9,8 @@ import moe.styx.downloader.parsing.ParseDenyReason
 import moe.styx.downloader.parsing.ParseResult
 import moe.styx.downloader.parsing.parseEpisodeAndVersion
 import moe.styx.downloader.utils.RegexCollection
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.io.File
 import kotlin.math.abs
 

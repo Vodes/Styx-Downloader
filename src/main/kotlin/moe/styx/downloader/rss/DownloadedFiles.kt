@@ -1,7 +1,6 @@
 package moe.styx.downloader.rss
 
 import kotlinx.coroutines.delay
-import kotlinx.datetime.Clock
 import moe.styx.common.extension.anyEquals
 import moe.styx.common.util.launchThreaded
 import moe.styx.db.tables.DownloaderTargetsTable
@@ -10,8 +9,9 @@ import moe.styx.downloader.downloaderConfig
 import moe.styx.downloader.episodeWanted
 import moe.styx.downloader.other.handleFile
 import moe.styx.downloader.parsing.ParseResult
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.io.File
+import kotlin.time.Clock
 
 fun startCheckingLocal() = launchThreaded {
     val tempDir = File(downloaderConfig.rssConfig.tempDir)
