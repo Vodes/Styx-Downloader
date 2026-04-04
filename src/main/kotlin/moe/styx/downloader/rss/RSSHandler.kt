@@ -62,22 +62,15 @@ object RSSHandler {
                         val nzbUrl = item.getNZBURL()
                         if (nzbUrl == null || alreadyAdded.anyEquals(nzbUrl))
                             continue
-                        Log.d("RSSHandler for Feed: $urlNoKeys") { "Downloading: ${item.title}" }
-                        val added = client.addNZBByURL(nzbUrl)
-                        if (!added) {
-                            Log.e("RSSHandler for Feed: $urlNoKeys") { "Could not add NZB with URL: ${removeKeysFromURL(nzbUrl)}\nPost: ${item.getPostURL()}" }
-                            delay(oneMinute)
-                            continue
-                        }
-                        alreadyAdded.add(nzbUrl)
-                        delay(8000)
+                        Log.d("RSSHandler for Feed: $urlNoKeys") { "Adding to SABNZBd queue: ${item.title}" }
+                        client.addDownloadToQueue(item)
                     }
                     if (feedURL.contains("animetosho"))
                         delay(10000)
                     else
                         delay(oneMinute)
                 }
-                delay(8.toDuration(DurationUnit.MINUTES))
+                delay(13.toDuration(DurationUnit.MINUTES))
             }
         }
     }
