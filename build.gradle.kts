@@ -20,6 +20,7 @@ repositories {
 }
 
 dependencies {
+    implementation("moe.styx:styx-common:0.6.2")
     implementation("moe.styx:styx-db:0.6.0")
     implementation("com.github.Vodes:PircBot:0.2")
     implementation("com.github.Vodes:anitomyJ:80f36aceb2")

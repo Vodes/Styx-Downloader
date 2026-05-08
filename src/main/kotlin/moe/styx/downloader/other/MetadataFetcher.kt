@@ -6,6 +6,7 @@ import moe.styx.common.config.UnifiedConfig
 import moe.styx.common.data.Media
 import moe.styx.common.data.MediaEntry
 import moe.styx.common.data.TMDBMapping
+import moe.styx.common.data.tmdb.StackType
 import moe.styx.common.data.tmdb.decodeMapping
 import moe.styx.common.data.tmdb.getMappingForEpisode
 import moe.styx.common.data.tmdb.orEmpty
@@ -89,7 +90,7 @@ object MetadataFetcher {
 }
 
 fun updateMetadataForEntry(entry: MediaEntry, media: Media) {
-    val tmdbMapping = media.decodeMapping().orEmpty().getMappingForEpisode(entry.entryNumber)?.let { it as TMDBMapping } ?: return
+    val tmdbMapping = media.decodeMapping().orEmpty().getMappingForEpisode<TMDBMapping>(entry.entryNumber, StackType.TMDB) ?: return
     val (metaEN, metaDE) = tmdbMapping.getRemoteEpisodes { Log.e("MetadataFetcher") { it } }
     val number = entry.entryNumber.toDouble() + tmdbMapping.offset
     val epMetaEN = metaEN.find { (if (it.order != null) it.order!! + 1 else it.episodeNumber) == number.toInt() }

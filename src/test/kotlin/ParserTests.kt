@@ -1,9 +1,11 @@
 import moe.styx.downloader.parsing.*
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-object ParserTests {
+class ParserTests {
 
+    @Test
     fun testParser() {
         parseMetadata("The Age of Cosmos Exploration - S01E12 - 1080p WEB H.264 -NanDesuKa (B-Global).mkv").assertResult(
             "NanDesuKa",
