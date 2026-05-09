@@ -78,7 +78,7 @@ object RSSHandler {
                     else
                         delay(oneMinute)
                 }
-                delay(13.toDuration(DurationUnit.MINUTES))
+                delay(14.toDuration(DurationUnit.MINUTES) + 13.toDuration(DurationUnit.SECONDS))
             }
         }
     }
