@@ -57,7 +57,15 @@ object RSSHandler {
                 val rssOptions = targets.getRSSOptions(SourceType.USENET)
                 for ((feedURL, options) in rssOptions.iterator()) {
                     val urlNoKeys = removeKeysFromURL(feedURL)
-                    val results = runCatching { checkFeed(feedURL, options, targets) }.getOrNull() ?: emptyList()
+                    val results = runCatching {
+                        Log.d(source = "RSSHandler::checkUsenetFeeds") { "Checking feed '$urlNoKeys'..." }
+                        checkFeed(feedURL, options, targets)
+                    }.onFailure {
+                        Log.e("RSSHandler::checkUsenetFeeds", it) { "Failed to check feed '$urlNoKeys'!" }
+                    }.getOrNull()?.also {
+                        if(it.isEmpty())
+                            Log.d(source = "RSSHandler::checkUsenetFeeds") { "No items found in feed '$urlNoKeys'" }
+                    } ?: emptyList()
                     for ((item, _) in results.filter { it.second is ParseResult.OK }) {
                         val nzbUrl = item.getNZBURL()
                         if (nzbUrl == null || alreadyAdded.anyEquals(nzbUrl))
@@ -90,7 +98,15 @@ object RSSHandler {
                 val rssOptions = targets.getRSSOptions(SourceType.TORRENT)
                 for ((feedURL, options) in rssOptions.iterator()) {
                     val urlNoKeys = removeKeysFromURL(feedURL)
-                    val results = runCatching { checkFeed(feedURL, options, targets) }.getOrNull() ?: emptyList()
+                    val results = runCatching {
+                        Log.d(source = "RSSHandler::checkTorrentFeeds") { "Checking feed '$urlNoKeys'..." }
+                        checkFeed(feedURL, options, targets)
+                    }.onFailure {
+                        Log.e("RSSHandler::checkTorrentFeeds", it) { "Failed to check feed '$urlNoKeys'!" }
+                    }.getOrNull()?.also {
+                        if(it.isEmpty())
+                            Log.d(source = "RSSHandler::checkTorrentFeeds") { "No items found in feed '$urlNoKeys'" }
+                    } ?: emptyList()
                     for ((item, parseResult) in results.filter { it.second is ParseResult.OK }) {
                         val result = parseResult as ParseResult.OK
                         val torrentUrl = item.getTorrentURL()
