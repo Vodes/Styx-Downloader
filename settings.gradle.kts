@@ -10,3 +10,13 @@ plugins {
 }
 
 rootProject.name = "Styx-Downloader"
+
+val localCommon = file("../Styx-Common")
+if (localCommon.isDirectory) {
+    includeBuild(localCommon) {
+        dependencySubstitution {
+            substitute(module("moe.styx:styx-common"))
+                .using(project(":styx-common"))
+        }
+    }
+}

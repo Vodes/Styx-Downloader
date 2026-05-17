@@ -58,6 +58,7 @@ fun ProcessingOptions.needsMuxtools(): Boolean {
         this.keepVideoOfPrevious,
         this.keepBetterAudio,
         this.keepSubsOfPrevious,
+        this.keepSubsMissingLanguages,
         this.keepNonEnglish,
         this.removeNewSubs,
         this.manualSubSync != 0L,
