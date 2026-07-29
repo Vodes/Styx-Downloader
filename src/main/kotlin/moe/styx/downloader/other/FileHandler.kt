@@ -14,8 +14,11 @@ import moe.styx.db.tables.MediaTable
 import moe.styx.downloader.dbClient
 import moe.styx.downloader.other.MetadataFetcher.addEntry
 import moe.styx.downloader.parsing.AnitomyResults
+import moe.styx.downloader.parsing.group
+import moe.styx.downloader.parsing.isLikelyFtpRelease
 import moe.styx.downloader.parsing.parseEpisodeAndVersion
 import moe.styx.downloader.parsing.parseMetadata
+import moe.styx.downloader.parsing.season
 import moe.styx.downloader.utils.*
 import moe.styx.downloader.utils.Log
 import org.jetbrains.exposed.v1.core.eq
@@ -31,15 +34,15 @@ private val epFormat = DecimalFormat("0.#")
 
 fun handleFile(file: File, parentDir: String?, target: DownloaderTarget, option: DownloadableOption): Boolean {
     val anitomyResults = parseMetadata(file.name)
-    val (episodeWithOffset, version) = anitomyResults.parseEpisodeAndVersion(option.episodeOffset) ?: return false
+    val (episodeWithOffset, version) = anitomyResults.parseEpisodeAndVersion(option.episodeOffset, file.name) ?: return false
     val media = dbClient.transaction { MediaTable.query { selectAll().where { GUID eq target.mediaID }.toList() } }.firstOrNull() ?: return false
     var outname = (if (option.overrideNamingTemplate.isNullOrBlank()) target.namingTemplate else option.overrideNamingTemplate)!!
-        .fillTokens(media, option, anitomyResults).toFileSystemCompliantName()
+        .fillTokens(media, option, anitomyResults, file.name).toFileSystemCompliantName()
     if (!outname.endsWith(".mkv", true))
         outname = "$outname.mkv"
     val title = (if (option.overrideTitleTemplate.isNullOrBlank()) target.titleTemplate else option.overrideTitleTemplate)!!
-        .fillTokens(media, option, anitomyResults)
-    val filledDir = target.outputDir.fillTokens(media, option, anitomyResults)
+        .fillTokens(media, option, anitomyResults, file.name)
+    val filledDir = target.outputDir.fillTokens(media, option, anitomyResults, file.name)
     val outDir = File(File(filledDir).parentFile, File(filledDir).name.toFileSystemCompliantName())
     outDir.mkdirs()
     val muxDir = File(UnifiedConfig.configFile.parentFile, "Muxing")
@@ -182,17 +185,18 @@ fun handleFile(file: File, parentDir: String?, target: DownloaderTarget, option:
 fun String.fillTokens(
     media: Media,
     option: DownloadableOption,
-    anitomyResults: AnitomyResults
+    anitomyResults: AnitomyResults,
+    originalName: String
 ): String {
     var filled = this.trim()
-    val (episode, _) = anitomyResults.parseEpisodeAndVersion(option.episodeOffset)!!
+    val (episode, _) = anitomyResults.parseEpisodeAndVersion(option.episodeOffset, originalName)!!
 
     filled = filled.replaceAll(media.name, "%name%")
     filled = filled.replaceAll(media.nameEN ?: "", "%en%", "%english%").trim()
     filled = filled.replaceAll(media.nameJP ?: "", "%rom%", "%romaji%").trim()
     filled = filled.replace(
         TokenRegex.absoluteEpisodeToken,
-        anitomyResults.find { it.category.toString() eqI "kElementEpisodeNumber" }?.value ?: ""
+        anitomyResults.season ?: ""
     )
 
     val episodeMatch = TokenRegex.regularEpisodeToken.findAll(filled).toList()
@@ -213,10 +217,10 @@ fun String.fillTokens(
         }
     }
 
-    var group = anitomyResults.find { it.category.toString() eqI "kElementReleaseGroup" }?.value
-    if (group != null && group.containsAny("JapDub", "GerJapDub", "JapGerDub", "E-AC-3", "EAC3", "EAC-3", "GerEngSub", "GerSub", "EngSub")) {
+    var group = anitomyResults.group
+    if(anitomyResults.isLikelyFtpRelease)
         group = "GerFTP"
-    }
+
     if (option.processingOptions?.needsMuxtools() == true) {
         group = if (group.isNullOrBlank()) "Styx" else "$group-Styx"
     }

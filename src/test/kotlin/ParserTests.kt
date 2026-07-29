@@ -102,17 +102,19 @@ class ParserTests {
         )
 
         parseMetadata("2.5 Jigen no Ririsa E01 [1080p][AAC][JapDub][GerSub][Web-DL].mkv").assertResult(
-            "JapDub",
+            null,
             "01",
-            "01",
-            "2.5 Jigen no Ririsa"
+            null,
+            "2.5 Jigen no Ririsa",
+            isFTP = true
         )
 
         parseMetadata("NieRAutomata Ver 1.1a S2E01 [1080p][AAC][JapDub][GerEngSub][Web-DL].mkv").assertResult(
-            "JapDub",
+            null,
             "01",
             "2",
-            "NieRAutomata Ver 1.1a"
+            "NieRAutomata Ver 1.1a",
+            isFTP = true
         )
         parseMetadata("CITY.THE.ANIMATION.S01E02.2.1080p.AMZN.WEB-DL.MULTi.DDP2.0.H.264-VARYG.mkv").assertResult(
             "VARYG",
@@ -127,12 +129,15 @@ class ParserTests {
         episode: String?,
         season: String?,
         title: String?,
-        version: String? = null
+        version: String? = null,
+        isFTP: Boolean = false,
     ) {
-        assertEquals(group, this.group)
+        if(!isFTP)
+            assertEquals(group, this.group)
         assertEquals(episode, this.episode)
         assertEquals(season, this.season)
         assertTrue { this.title.equals(title) || this.title?.replace(" ", ".").equals(title?.replace(" ", ".")) }
         assertEquals(version, this.version)
+        assertEquals(isFTP, this.isLikelyFtpRelease)
     }
 }
