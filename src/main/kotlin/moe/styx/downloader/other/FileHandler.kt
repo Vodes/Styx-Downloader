@@ -51,69 +51,50 @@ fun handleFile(file: File, parentDir: String?, target: DownloaderTarget, option:
     var output = File(outDir, outname)
     val previous = dbClient.transaction { MediaEntryTable.query { selectAll().where { mediaID eq media.GUID }.toList() } }
         .find { it.entryNumber.toDoubleOrNull() == episodeWithOffset.toDoubleOrNull() }
-    if (option.processingOptions != null && option.processingOptions!!.needsMuxtools()) {
-        val logFile = File(muxDir, "Mux Log - ${Log.getFormattedTime().replace(":", "-")}.txt")
-        val commands = getBaseCommand(option.processingOptions!!)
-        commands.add("-o=${File(muxDir, output.name)}")
-
-        if (arrayOf(
-                option.processingOptions!!.keepAudioOfPrevious,
-                option.processingOptions!!.keepVideoOfPrevious,
-                option.processingOptions!!.keepBetterAudio,
-                option.processingOptions!!.keepSubsOfPrevious,
-                option.processingOptions!!.keepNonEnglish,
-                option.processingOptions!!.removeNewSubs,
-                option.processingOptions!!.manualSubSync != 0L,
-                option.processingOptions!!.manualAudioSync != 0L
-            ).any { it }
-        ) {
-            if (previous == null || !File(previous.filePath).exists()) {
-                Log.w("FileHandler for File: ${file.name}") { "No processing applied due to missing a previous entry." }
-                return false
-            }
-            commands.add(previous.filePath)
-            logFile.writeText("Input 1: ${File(previous.filePath).name}\nInput 2: ${file.name}\n")
-        } else
-            logFile.writeText("Input 1: ${file.name}\n")
-
-        logFile.writeText(
-            logFile.readText() +
-                    "ProcessingOptions:\n${toml.encodeToString(option.processingOptions!!)}\n\n" +
-                    "---------- Muxtools Log below ----------\n\n"
-        )
-        commands.add(file.absolutePath)
-        val result = ProcessBuilder(commands)
-            .redirectOutput(ProcessBuilder.Redirect.appendTo(logFile))
-            .redirectError(ProcessBuilder.Redirect.appendTo(logFile))
-            .directory(muxDir).start().waitFor()
-        val muxedFile = File(muxDir, output.name)
-        if (result == 0 && muxedFile.exists()) {
+    val donor = previous?.let { File(it.filePath) }?.takeIf { it.isFile }
+    val effective = runCatching {
+        prepareProcessing(option.processingOptions, donor != null, option.waitForPrevious)
+    }.getOrElse {
+        Log.e("FileHandler for File: ${file.name}") { it.message ?: "Invalid processing options" }
+        return false
+    }
+    if (effective?.skipped?.isNotEmpty() == true)
+        Log.w("FileHandler for File: ${file.name}") { "No previous file; skipping: ${effective.skipped.joinToString()}" }
+    val processing = effective?.options
+    val needsProcessing = processing?.needsMuxtools() == true || hasMuxtoolsTokens(outname) || hasMuxtoolsTokens(title)
+    if (needsProcessing) {
+        val logFile = File(muxDir, "Mux Log - ${UUID.randomUUID()}.txt")
+        val stage = Files.createTempDirectory(muxDir.toPath(), "mux-").toFile()
+        val result = runCatching {
+            val python = getExecutableFromPath("python") ?: error("Could not find python or python3 in PATH")
+            val commands = buildProcessingCommand(
+                python, file, donor, processing ?: ProcessingOptions(removeUnnecessary = false, fixTagging = false),
+                stage, outname, title, episodeWithOffset, media.nameEN ?: media.name,
+                supplementalInfo = parentDir,
+                donorSupplementalInfo = previous?.originalParentFolder,
+            )
+            logFile.writeText("Target: ${file.absolutePath}\nDonor: ${donor?.absolutePath}\n" +
+                "ProcessingOptions:\n${processing?.let { toml.encodeToString(it) }}\n\n")
+            val muxedFile = runProcessingCommand(commands, stage, logFile)
+            output = File(outDir, muxedFile.name.toFileSystemCompliantName())
             Files.move(muxedFile.toPath(), output.toPath(), StandardCopyOption.REPLACE_EXISTING)
-            file.delete()
-        } else
+        }
+        if (result.isFailure) {
+            Log.e("FileHandler for File: ${file.name}") { "${result.exceptionOrNull()?.message}; log: ${logFile.absolutePath}" }
             return false
+        }
+        stage.deleteRecursively()
+        file.delete()
     } else {
         Files.move(file.toPath(), output.toPath(), StandardCopyOption.REPLACE_EXISTING)
     }
-    output.setTitleAndFixMeta(title)
-
-    if (option.processingOptions != null && option.processingOptions!!.fixTagging) {
-        val commands = listOf(
-            getExecutableFromPath("python")!!.absolutePath,
-            "-m",
-            "muxtools_styx",
-            "-o=${output.absolutePath}",
-            "--fix-tagging",
-            output.absolutePath
-        )
-        ProcessBuilder(commands).redirectOutput(ProcessBuilder.Redirect.DISCARD).start().waitFor()
-    }
+    output.setTitleAndFixMeta(if (needsProcessing) null else title)
 
     val mediaInfoResult = output.getMediaInfo()
 
     if (output.name.containsAny("%jp%", "%res%")) {
         val resolution = mediaInfoResult?.tracks?.find { it.type eqI "video" }?.let { it.height ?: "1080" } ?: "1080"
-        var jpCodec = mediaInfoResult?.tracks?.find { it.type eqI "audio" && it.language.equalsAny("ja", "jpn") }?.format ?: "AAC"
+        var jpCodec = mediaInfoResult?.tracks?.find { it.type eqI "audio" && it.matchesLanguage("ja", "jpn") }?.format ?: "AAC"
         if (parentDir?.contains("ADN") == true) {
             jpCodec = "qAAC"
         }
@@ -240,62 +221,21 @@ fun String.fillTokens(
     return filled.trim()
 }
 
-private fun File.setTitleAndFixMeta(title: String): Boolean {
+private fun File.setTitleAndFixMeta(title: String?): Boolean {
     val exe = getExecutableFromPath("mkvpropedit")
     if (exe == null) {
-        Log.w { "Could not find mkvpropedit in path!" }
+        Log.w { "Could not find mkvpropedit in PATH or muxtools managed binaries!" }
         return false
     }
-    val commands = listOf(
+    val commands = mutableListOf(
         exe.absolutePath,
         this.absolutePath,
         "--add-track-statistics-tags",
         "--set",
-        "writing-application=Styx Muxing Service v69.0.0 ('Sneedmode') 64-bit @Vodes",
-        "--edit",
-        "info",
-        "--set",
-        "title=$title"
+        "writing-application=Styx Muxing Service v69.0.0 ('Sneedmode') 64-bit @Vodes"
     )
+    if (title != null) commands.addAll(listOf("--edit", "info", "--set", "title=$title"))
     return ProcessBuilder(commands).redirectError(ProcessBuilder.Redirect.INHERIT).redirectOutput(ProcessBuilder.Redirect.DISCARD).start()
         .waitFor() == 0
 }
 
-private fun getBaseCommand(processingOptions: ProcessingOptions): MutableList<String> {
-    val commands = mutableListOf(getExecutableFromPath("python")!!.absolutePath, "-m", "muxtools_styx", "-v")
-
-    if (processingOptions.restyleSubs)
-        commands.add("--restyle-subs")
-    if (processingOptions.removeUnnecessary)
-        commands.add("-rm")
-    if (processingOptions.audioLanguages.isNotBlank())
-        processingOptions.audioLanguages.split(",").forEach {
-            commands.add("-al=${it.trim()}")
-        }
-    if (processingOptions.subLanguages.isNotBlank())
-        processingOptions.subLanguages.split(",").forEach {
-            commands.add("-sl=${it.trim()}")
-        }
-    if (processingOptions.keepBetterAudio)
-        commands.add("--best-audio")
-    if (processingOptions.keepVideoOfPrevious)
-        commands.add("--keep-video")
-    if (processingOptions.keepAudioOfPrevious)
-        commands.add("--keep-audio")
-    if (processingOptions.keepSubsOfPrevious)
-        commands.add("--keep-subs")
-    if (processingOptions.removeNewSubs)
-        commands.add("--discard-new-subs")
-    if (processingOptions.keepNonEnglish)
-        commands.add("--keep-non-english")
-    if (processingOptions.tppSubs)
-        commands.add("-tpp")
-    if (processingOptions.sushiSubs)
-        commands.add("-sushi")
-    if (processingOptions.manualAudioSync != 0L)
-        commands.add("--audio-sync=${processingOptions.manualAudioSync}")
-    if (processingOptions.manualSubSync != 0L)
-        commands.add("--sub-sync=${processingOptions.manualSubSync}")
-
-    return commands
-}

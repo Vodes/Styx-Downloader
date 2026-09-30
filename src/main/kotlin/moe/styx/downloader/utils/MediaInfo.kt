@@ -2,15 +2,11 @@ package moe.styx.downloader.utils
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.decodeFromJsonElement
-import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.decodeFromString
 import moe.styx.common.extension.eqI
 import moe.styx.common.extension.equalsAny
-import moe.styx.common.isWindows
 import moe.styx.common.json
 import java.io.File
-import java.util.concurrent.TimeUnit
 
 @Serializable
 data class MediaInfo(
@@ -19,9 +15,9 @@ data class MediaInfo(
     @SerialName("track")
     val tracks: List<Track>
 ) {
-    fun hasGermanDub() = tracks.filter { it.type eqI "audio" }.find { it.language.equalsAny("de", "ger") } != null
-    fun hasGermanSub() = tracks.filter { it.type eqI "text" }.find { it.language.equalsAny("de", "ger") } != null
-    fun hasEnglishDub() = tracks.filter { it.type eqI "audio" }.find { it.language.equalsAny("en", "eng") } != null
+    fun hasGermanDub() = tracks.filter { it.type eqI "audio" }.find { it.matchesLanguage("de", "ger", "deu") } != null
+    fun hasGermanSub() = tracks.filter { it.type eqI "text" }.find { it.matchesLanguage("de", "ger", "deu") } != null
+    fun hasEnglishDub() = tracks.filter { it.type eqI "audio" }.find { it.matchesLanguage("en", "eng") } != null
     fun videoBitDepth() = tracks.find { it.type eqI "video" }?.bitDepth?.toIntOrNull() ?: 8
     fun videoResolution() = tracks.find { it.type eqI "video" }?.let { "${it.width ?: "1920"}x${it.height ?: "1080"}" } ?: "1920x1080"
     fun videoCodec() = tracks.find { it.type eqI "video" }?.format ?: "AVC"
@@ -58,40 +54,46 @@ data class Track(
     val title: String? = null
 )
 
+internal fun Track.matchesLanguage(vararg languages: String): Boolean =
+    language?.substringBefore('-').equalsAny(*languages)
+
+internal val mediaInspectionScript = """
+    import json, sys
+    from muxtools import ParsedFile, TrackType
+
+    media = ParsedFile.from_file(sys.argv[1])
+    kinds = {TrackType.VIDEO: "video", TrackType.AUDIO: "audio", TrackType.SUB: "text"}
+    codecs = {"h264": "AVC", "hevc": "HEVC", "mpeg2video": "MPEG Video", "av1": "AV1", "vp9": "VP9"}
+    tracks = []
+    for track in media.tracks:
+        if track.type not in kinds:
+            continue
+        audio_format = track.get_audio_format()
+        codec = audio_format.display_name if audio_format else codecs.get(track.codec_name, track.codec_name.upper())
+        raw = track.raw_ffprobe
+        tracks.append({
+            "@type": kinds[track.type], "Format": codec,
+            "Width": str(raw.width) if raw.width else None,
+            "Height": str(raw.height) if raw.height else None,
+            "BitDepth": str(track.bit_depth) if track.bit_depth else None,
+            "Language": track.sanitized_lang.to_tag(), "Title": track.title,
+            "Default": "Yes" if track.is_default else "No",
+            "Forced": "Yes" if track.is_forced else "No",
+        })
+    print(json.dumps({"@ref": sys.argv[1], "track": tracks}, separators=(",", ":")))
+""".trimIndent()
+
 fun File.getMediaInfo(): MediaInfo? {
-    val mediainfoExecutable = getExecutableFromPath("mediainfo") ?: return null
-
-    val process: Process = if (isWindows) {
-        val command = "\"${mediainfoExecutable.absolutePath}\" --Output=JSON \"${this.absolutePath}\""
-        ProcessBuilder(command)
-            .redirectOutput(ProcessBuilder.Redirect.PIPE)
-            .redirectError(ProcessBuilder.Redirect.PIPE).start()
-    } else {
-        ProcessBuilder(listOf(mediainfoExecutable.absolutePath, "--Output=JSON", this.absolutePath)).directory(mediainfoExecutable.parentFile)
-            .redirectOutput(ProcessBuilder.Redirect.PIPE)
-            .redirectError(ProcessBuilder.Redirect.PIPE).start()
-    }
-
-    process.waitFor(3, TimeUnit.SECONDS)
-
-    try {
-        val output = process.inputStream.bufferedReader().readText()
-        val jsonObj = json.decodeFromString<JsonObject>(output)
-        return json.decodeFromJsonElement(jsonObj["media"]!!.jsonObject)
-    } catch (ex: Exception) {
-        ex.printStackTrace()
-    }
-    return null
+    val python = getExecutableFromPath("python") ?: return null
+    return runCatching {
+        json.decodeFromString<MediaInfo>(runPythonQuery(python, mediaInspectionScript, absolutePath))
+    }.onFailure {
+        Log.w("Media inspection: $name") { it.message ?: "Could not inspect media with muxtools" }
+    }.getOrNull()
 }
 
-fun getExecutableFromPath(name: String): File? {
-    val pathDirs = System.getenv("PATH").split(File.pathSeparator)
-        .map { File(it) }.filter { it.exists() && it.isDirectory }
-
-    for (files in pathDirs.map { it.listFiles() }) {
-        val target = files?.find { it.nameWithoutExtension eqI name }
-        if (target != null)
-            return target
-    }
-    return null
+fun File.inspectMedia(): String {
+    val python = getExecutableFromPath("python") ?: error("Could not find python or python3 in PATH")
+    return runPythonCommand(python, listOf("-m", "muxtools_styx", "inspect", absolutePath))
+        .also { check(it.isNotBlank()) { "Media inspection returned no output" } }
 }

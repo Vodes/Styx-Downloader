@@ -65,7 +65,10 @@ fun ProcessingOptions.needsMuxtools(): Boolean {
         this.manualAudioSync != 0L,
         this.restyleSubs,
         this.tppSubs,
-        this.sushiSubs
+        this.fillAudioOfPrevious,
+        this.removeUnnecessary,
+        this.fixTagging,
+        this.normalizeTrackNames
     ).any { it }
 }
 
