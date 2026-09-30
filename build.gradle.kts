@@ -5,11 +5,11 @@ plugins {
     `java-library`
     `maven-publish`
     id("io.github.goooler.shadow") version "8.1.8"
-    id("com.github.gmazzo.buildconfig") version "6.0.10"
+    id("com.github.gmazzo.buildconfig") version "6.1.2"
 }
 
 group = "moe.styx"
-version = "0.6.2"
+version = "0.6.3"
 
 repositories {
     mavenCentral()
@@ -25,18 +25,18 @@ dependencies {
     implementation("com.github.Vodes:PircBot:0.2")
     implementation("pw.vodes:anitomy-kmp-jvm:2.0.0-alpha1")
 
-    implementation("com.github.ajalt.mordant:mordant:3.0.2")
+    implementation("com.github.ajalt.mordant:mordant:3.1.0")
     implementation("de.androidpit:color-thief:1.1.2")
-    implementation("com.google.guava:guava:33.6.0-jre")
-    implementation("org.apache.commons:commons-lang3:3.20.0")
+    implementation("com.google.guava:guava:33.7.2-jre")
+    implementation("org.apache.commons:commons-lang3:3.21.0")
     implementation("org.postgresql:postgresql:42.7.13")
     implementation("com.apptasticsoftware:rssreader:3.12.0")
-    implementation("org.apache.commons:commons-collections4:4.5.0")
-    implementation("com.twelvemonkeys.imageio:imageio-core:3.14.0")
-    runtimeOnly("com.twelvemonkeys.imageio:imageio-webp:3.14.0")
+    implementation("org.apache.commons:commons-collections4:4.6.0")
+    implementation("com.twelvemonkeys.imageio:imageio-core:3.15.2")
+    runtimeOnly("com.twelvemonkeys.imageio:imageio-webp:3.15.2")
 
     implementation("org.javacord:javacord:3.8.0")
-    implementation("org.slf4j:slf4j-simple:2.0.18")
+    implementation("org.slf4j:slf4j-simple:2.0.20")
     runtimeOnly("org.apache.logging.log4j:log4j-to-slf4j:2.26.1")
     implementation("commons-net:commons-net:3.13.0")
 
