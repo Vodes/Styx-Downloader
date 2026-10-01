@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "moe.styx"
-version = "0.6.3"
+version = "0.6.4"
 
 repositories {
     mavenCentral()
@@ -23,7 +23,7 @@ dependencies {
     implementation("moe.styx:styx-common:0.6.6")
     implementation("moe.styx:styx-db:0.6.2")
     implementation("com.github.Vodes:PircBot:0.2")
-    implementation("pw.vodes:anitomy-kmp-jvm:2.0.0-alpha1")
+    implementation("pw.vodes:anitomy-kmp-jvm:2.0.0-alpha3")
 
     implementation("com.github.ajalt.mordant:mordant:3.1.0")
     implementation("de.androidpit:color-thief:1.1.2")
